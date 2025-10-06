@@ -134,9 +134,9 @@ export default function LandingPage() {
               <h2 className="text-3xl lg:text-5xl font-bold">Making a real difference for Rwanda&apos;s farmers</h2>
               <p className="text-lg text-gray-600 leading-relaxed">VetConnect Rwanda addresses critical gaps in veterinary service delivery, supporting Rwanda&apos;s Vision 2050 and improving livestock productivity across the country.</p>
               <div className="space-y-4">
-                {[{ title: "Reduced Livestock Mortality", description: "Target 25% decrease in preventable livestock deaths through timely veterinary intervention" },
-                  { title: "Improved Service Access", description: "40% reduction in appointment booking time for rural farmers across 30 districts" },
-                  { title: "Better Vaccination Coverage", description: "35% improvement in vaccination schedule adherence through automated reminders" }].map((item, index) => (
+                {[{ title: "Reduced Livestock Mortality", description: "Target 25% decrease in preventable livestock deaths through timely veterinary intervention." },
+                  { title: "Improved Service Access", description: "40% reduction in appointment booking time for rural farmers across 30 districts." },
+                  { title: "Better Vaccination Coverage", description: "35% improvement in vaccination schedule adherence through automated reminders." }].map((item, index) => (
                   <div key={index} className="flex items-start gap-4">
                     <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-1"><span className="text-green-600 font-bold">✓</span></div>
                     <div>
@@ -179,7 +179,7 @@ export default function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600"><Heart className="h-5 w-5 text-white" /></div>
                 <span className="font-bold">VetConnect Rwanda</span>
               </div>
-              <p className="text-sm text-gray-600">Smart veterinary appointment booking for Rwanda&apos;s livestock sector</p>
+              <p className="text-sm text-gray-600">Smart veterinary appointment booking for Rwanda&apos;s livestock sector.</p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
