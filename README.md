@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![VetConnect Logo](./public/logo.svg)
-
 **Smart Veterinary Appointment Booking Platform for Rwanda**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -223,7 +221,6 @@ Visit [http://localhost:3000](http://localhost:3000)
 - Rwanda Agriculture & Animal Resources Development Board (RAB)
 - Ministry of Agriculture (MINAGRI)
 - Feedback from local farmers & veterinarians
-- Built with [v0.app](https://v0.app)
 
 ---
 
