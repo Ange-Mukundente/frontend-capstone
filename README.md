@@ -9,8 +9,6 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/anges-projects-bae26f2c/v0-greeting)
 
-[Live Demo](https://vercel.com/anges-projects-bae26f2c/v0-greeting) • [Report Bug](https://github.com/yourusername/vetconnect-rwanda/issues) • [Request Feature](https://github.com/yourusername/vetconnect-rwanda/issues)
-
 </div>
 
 ---
@@ -264,8 +262,6 @@ Visit [http://localhost:3000](http://localhost:3000)
 4. Click **Deploy**
 
 ✅ Automatic deployments on every `main` branch push
-
----
 
 ---
 
