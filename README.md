@@ -108,30 +108,106 @@ VetConnect Rwanda is a **digital platform connecting farmers with veterinarians*
 ## 📁 Folder Structure
 
 ```bash
+## 📂 Folder Structure
+
+```
+
 vetconnect-frontend/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   ├── globals.css
-│   │   ├── auth/          # login, register, forgot-password
-│   │   └── dashboard/     # farmer, vet, admin dashboards
-│   ├── components/
-│   │   ├── ui/             # shadcn/ui
-│   │   ├── layout/         # header/footer/sidebar
-│   │   ├── auth/           # login/register forms
-│   │   ├── appointments/
-│   │   └── livestock/
-│   ├── lib/                # utilities, API client
-│   ├── hooks/              # custom hooks
-│   ├── types/              # TypeScript types
-│   └── config/             # site & API configuration
-├── public/                 # images, favicon
-├── .env.local
+│
+├── 📁 src/
+│ ├── 📁 app/ # Next.js App Router
+│ │ ├── layout.tsx # Root layout
+│ │ ├── page.tsx # Landing page
+│ │ ├── globals.css # Global styles
+│ │ │
+│ │ ├── 📁 (auth)/ # Auth routes
+│ │ │ ├── 📁 login/
+│ │ │ │ └── page.tsx
+│ │ │ ├── 📁 register/
+│ │ │ │ └── page.tsx
+│ │ │ └── 📁 forgot-password/
+│ │ │ └── page.tsx
+│ │ │
+│ │ └── 📁 dashboard/ # Dashboard routes
+│ │ ├── 📁 farmer/
+│ │ │ ├── page.tsx
+│ │ │ ├── 📁 appointments/
+│ │ │ │ └── page.tsx
+│ │ │ ├── 📁 livestock/
+│ │ │ │ └── page.tsx
+│ │ │ └── 📁 alerts/
+│ │ │ └── page.tsx
+│ │ │
+│ │ ├── 📁 veterinarian/
+│ │ │ ├── page.tsx
+│ │ │ ├── 📁 appointments/
+│ │ │ │ └── page.tsx
+│ │ │ └── 📁 schedule/
+│ │ │ └── page.tsx
+│ │ │
+│ │ └── 📁 admin/
+│ │ └── page.tsx
+│ │
+│ ├── 📁 components/ # React Components
+│ │ ├── 📁 ui/ # Shadcn components
+│ │ │ ├── button.tsx
+│ │ │ ├── card.tsx
+│ │ │ ├── input.tsx
+│ │ │ └── ...
+│ │ │
+│ │ ├── 📁 layout/
+│ │ │ ├── header.tsx
+│ │ │ ├── footer.tsx
+│ │ │ └── sidebar.tsx
+│ │ │
+│ │ ├── 📁 auth/
+│ │ │ ├── login-form.tsx
+│ │ │ └── register-form.tsx
+│ │ │
+│ │ ├── 📁 appointments/
+│ │ │ ├── appointment-card.tsx
+│ │ │ └── appointment-form.tsx
+│ │ │
+│ │ └── 📁 livestock/
+│ │ ├── livestock-card.tsx
+│ │ └── livestock-form.tsx
+│ │
+│ ├── 📁 lib/ # Utilities
+│ │ ├── utils.ts
+│ │ ├── api-client.ts # API calls to backend
+│ │ └── auth.ts
+│ │
+│ ├── 📁 hooks/ # Custom hooks
+│ │ ├── use-auth.ts
+│ │ ├── use-appointments.ts
+│ │ └── use-livestock.ts
+│ │
+│ ├── 📁 types/ # TypeScript types
+│ │ ├── index.ts
+│ │ ├── user.ts
+│ │ ├── appointment.ts
+│ │ └── livestock.ts
+│ │
+│ └── 📁 config/
+│ ├── site.ts
+│ └── api.ts # API endpoints config
+│
+├── 📁 public/ # Static assets
+│ ├── images/
+│ ├── logo.svg
+│ └── favicon.ico
+│
+├── .env.local # Environment variables
+├── .env.example
+├── .gitignore
+├── next.config.mjs
 ├── package.json
 ├── tsconfig.json
 ├── tailwind.config.ts
 └── README.md
+
+```
+
 ```
 
 ---
