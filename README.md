@@ -146,8 +146,8 @@ vetconnect-frontend/
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/vetconnect-rwanda-frontend.git
-cd vetconnect-rwanda-frontend
+git clone https://github.com/Ange-Mukundente/frontend-capstone.git
+cd frontend-capstone
 npm install  # or pnpm install / yarn install
 ```
 
@@ -226,7 +226,6 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 <div align="center">
 
-**Built with 💚 for Rwanda's Agricultural Future**
-[Website](https://vetconnect.rw) • [Documentation](https://docs.vetconnect.rw) • [Support](mailto:support@vetconnect.rw)
+Author: Ange Mukundente<angemukundente@gmail.com>
 
 </div>
