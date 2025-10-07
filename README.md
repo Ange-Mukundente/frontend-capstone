@@ -267,12 +267,6 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 🎨 Design System
-
-- **Primary:** Green `#16a34a`
-- **Accent:** Yellow `#eab308`
-- **Typography:** Inter font, line-height 1.5–1.6
-
 ---
 
 ## 🤝 Contributing
