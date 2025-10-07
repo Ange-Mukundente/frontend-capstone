@@ -287,7 +287,7 @@ Visit [http://localhost:3000](http://localhost:3000)
 1. Fork the repo
 2. Create feature branch
 3. Commit changes
-4. Push branch & open PR
+4. Push branch
 
 ---
 
