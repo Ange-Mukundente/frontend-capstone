@@ -15,9 +15,13 @@ export default function LandingPage() {
               <span className="text-xl font-bold">VetConnect Rwanda</span>
             </div>
             <nav className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-sm font-medium text-gray-600 hover:text-gray-900">Features</a>
+              <a href="#features" className="text-sm font-medium text-gray-600 hover:text-gray-900">Services</a>
               <a href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-gray-900">How It Works</a>
               <a href="#impact" className="text-sm font-medium text-gray-600 hover:text-gray-900">Impact</a>
+              <a href="#contact" className="text-sm font-medium text-gray-600 hover:text-gray-900">Contact</a>
+              <a href="#about" className="text-sm font-medium text-gray-600 hover:text-gray-900">About</a>
+              <a href="#sms" className="text-sm font-medium text-gray-600 hover:text-gray-900">SMS Access</a>
+
             </nav>
             <div className="flex items-center gap-3">
               <button className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Sign In</button>
