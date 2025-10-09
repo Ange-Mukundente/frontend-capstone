@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Calendar, Heart, Bell, Smartphone, ArrowRight } from "lucide-react"
 
 export default function LandingPage() {
@@ -99,9 +100,11 @@ export default function LandingPage() {
             </div>
             <div className="relative">
               <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-200 shadow-2xl">
-                <img
+                <Image
                   src="/african-farmer-with-cattle-in-rwanda-countryside.jpg"
                   alt="Farmer with livestock"
+                  width={600}
+                  height={600}
                   className="object-cover w-full h-full"
                 />
               </div>
@@ -117,7 +120,7 @@ export default function LandingPage() {
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl lg:text-5xl font-bold text-balance">Core Features for Better Livestock Care</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto text-pretty">
-              Four powerful tools designed specifically for Rwanda's smallholder farmers and veterinarians
+              Four powerful tools designed specifically for Rwanda&apos;s smallholder farmers and veterinarians
             </p>
           </div>
 
@@ -231,9 +234,9 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <h2 className="text-3xl lg:text-5xl font-bold">Making a real difference for Rwanda's farmers</h2>
+              <h2 className="text-3xl lg:text-5xl font-bold">Making a real difference for Rwanda&apos;s farmers</h2>
               <p className="text-lg text-gray-600 leading-relaxed">
-                VetConnect Rwanda addresses critical gaps in veterinary service delivery, supporting Rwanda's Vision
+                VetConnect Rwanda addresses critical gaps in veterinary service delivery, supporting Rwanda&apos;s Vision
                 2050 and improving livestock productivity across the country.
               </p>
               <div className="space-y-4">
@@ -266,9 +269,11 @@ export default function LandingPage() {
             </div>
             <div className="relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gray-200">
-                <img
+                <Image
                   src="/rwandan-veterinarian-examining-cattle-in-rural-set.jpg"
                   alt="Veterinarian with livestock"
+                  width={600}
+                  height={450}
                   className="object-cover w-full h-full"
                 />
               </div>
@@ -316,7 +321,7 @@ export default function LandingPage() {
                 <span className="font-bold">VetConnect Rwanda</span>
               </div>
               <p className="text-sm text-gray-600">
-                Smart veterinary appointment booking for Rwanda's livestock sector
+                Smart veterinary appointment booking for Rwanda&apos;s livestock sector
               </p>
             </div>
             <div>
@@ -397,7 +402,7 @@ export default function LandingPage() {
           </div>
           <div className="border-t mt-12 pt-8 text-center text-sm text-gray-600">
             <p>
-              &copy; 2025 VetConnect Rwanda. Supporting Rwanda's Vision 2050 through digital livestock health
+              &copy; 2025 VetConnect Rwanda. Supporting Rwanda&apos;s Vision 2050 through digital livestock health
               management.
             </p>
           </div>
