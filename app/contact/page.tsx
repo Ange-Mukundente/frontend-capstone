@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Heart, Mail, Phone, MapPin, Send } from "lucide-react"
@@ -23,12 +22,9 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-
-    // Simulate API call
     setTimeout(() => {
       setIsSubmitting(false)
       setSubmitStatus("success")
-      // Reset form
       setFormData({
         name: "",
         email: "",
@@ -42,10 +38,7 @@ export default function ContactPage() {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
   return (
@@ -61,18 +54,10 @@ export default function ContactPage() {
               <span className="text-xl font-bold">VetConnect Rwanda</span>
             </Link>
             <nav className="hidden md:flex items-center gap-6">
-              <Link href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Home
-              </Link>
-              <Link href="/#features" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Features
-              </Link>
-              <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                About
-              </Link>
-              <Link href="/contact" className="text-sm font-medium text-green-600">
-                Contact
-              </Link>
+              <Link href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">Home</Link>
+              <Link href="/#features" className="text-sm font-medium text-gray-600 hover:text-gray-900">Features</Link>
+              <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900">About</Link>
+              <Link href="/contact" className="text-sm font-medium text-green-600">Contact</Link>
             </nav>
             <div className="flex items-center gap-3">
               <Link href="/login" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
@@ -95,7 +80,7 @@ export default function ContactPage() {
           <div className="max-w-3xl mx-auto text-center space-y-4">
             <h1 className="text-4xl lg:text-5xl font-bold">Get in Touch</h1>
             <p className="text-lg text-green-50">
-              Have questions about VetConnect Rwanda? We're here to help farmers and veterinarians connect better.
+              Have questions about VetConnect Rwanda? We&#39;re here to help farmers and veterinarians connect better.
             </p>
           </div>
         </div>
@@ -159,7 +144,7 @@ export default function ContactPage() {
 
                 {submitStatus === "success" && (
                   <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-                    Thank you for contacting us! We'll get back to you within 24 hours.
+                    Thank you for contacting us! We&#39;ll get back to you within 24 hours.
                   </div>
                 )}
 
