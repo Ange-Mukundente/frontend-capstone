@@ -16,9 +16,14 @@ class ApiClient {
   private async request<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const token = this.getAuthToken()
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...options.headers,
+    }
+
+    // Merge existing headers if any
+    if (options.headers) {
+      const existingHeaders = options.headers as Record<string, string>
+      Object.assign(headers, existingHeaders)
     }
 
     if (token) {

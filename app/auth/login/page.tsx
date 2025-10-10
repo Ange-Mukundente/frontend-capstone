@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -15,7 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, isLoading } = useAuth()
+  const { login, loading } = useAuth()
   const { toast } = useToast()
   const [formData, setFormData] = useState({
     email: "",
@@ -26,25 +25,27 @@ export default function LoginPage() {
     e.preventDefault()
 
     try {
-      const user = await login(formData.email, formData.password)
-
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.name}!`,
+      const response = await login({
+        email: formData.email,
+        password: formData.password,
       })
 
-      // Redirect based on user role
-      if (user.role === "farmer") {
-        router.push("/dashboard/farmer")
-      } else if (user.role === "veterinarian") {
-        router.push("/dashboard/veterinarian")
-      } else if (user.role === "admin") {
-        router.push("/dashboard/admin")
+      if (response.success && response.data) {
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${response.data.user.name}!`,
+        })
+      } else {
+        toast({
+          title: "Login failed",
+          description: response.message || "Invalid credentials",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       toast({
         title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
+        description: error instanceof Error ? error.message : "Something went wrong",
         variant: "destructive",
       })
     }
@@ -98,8 +99,8 @@ export default function LoginPage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
+                {loading ? "Signing in..." : "Sign In"}
               </Button>
               <p className="text-sm text-center text-gray-600">
                 Don't have an account?{" "}
