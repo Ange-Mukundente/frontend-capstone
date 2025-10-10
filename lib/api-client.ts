@@ -1,36 +1,73 @@
-import axios from 'axios';
+interface ApiResponse<T> {
+  success: boolean
+  data?: T
+  message?: string
+  error?: string
+}
 
-const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // For cookies/sessions
-});
-
-// Request interceptor (add auth token)
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+class ApiClient {
+  private getAuthToken(): string | null {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("token")
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor (handle errors)
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Redirect to login
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
+    return null
   }
-);
 
-export default apiClient;
+  private async request<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    const token = this.getAuthToken()
+
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      ...options.headers,
+    }
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`
+    }
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || "Request failed")
+      }
+
+      return data
+    } catch (error) {
+      console.error("API Error:", error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      }
+    }
+  }
+
+  async get<T>(url: string): Promise<ApiResponse<T>> {
+    return this.request<T>(url, { method: "GET" })
+  }
+
+  async post<T>(url: string, data: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>(url, {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  }
+
+  async put<T>(url: string, data: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>(url, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
+  async delete<T>(url: string): Promise<ApiResponse<T>> {
+    return this.request<T>(url, { method: "DELETE" })
+  }
+}
+
+export const apiClient = new ApiClient()
