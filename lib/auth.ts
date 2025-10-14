@@ -4,7 +4,10 @@ import API_ENDPOINTS from "@/config/api"
 
 export const authService = {
   async login(credentials: LoginCredentials) {
-    const response = await apiClient.post<{ token: string; user: User }>(API_ENDPOINTS.LOGIN, credentials)
+    const response = await apiClient.post<{ token: string; user: User }>(
+      API_ENDPOINTS.LOGIN,
+      credentials
+    )
 
     if (response.success && response.data) {
       localStorage.setItem("token", response.data.token)
@@ -15,7 +18,10 @@ export const authService = {
   },
 
   async register(data: RegisterData) {
-    const response = await apiClient.post<{ token: string; user: User }>(API_ENDPOINTS.REGISTER, data)
+    const response = await apiClient.post<{ token: string; user: User }>(
+      API_ENDPOINTS.REGISTER,
+      data
+    )
 
     if (response.success && response.data) {
       localStorage.setItem("token", response.data.token)
@@ -38,7 +44,15 @@ export const authService = {
   getStoredUser(): User | null {
     if (typeof window !== "undefined") {
       const userStr = localStorage.getItem("user")
-      return userStr ? JSON.parse(userStr) : null
+      if (!userStr || userStr === "undefined") return null
+
+      try {
+        return JSON.parse(userStr)
+      } catch (error) {
+        console.error("Failed to parse user from localStorage:", error)
+        localStorage.removeItem("user") // Clean up invalid data
+        return null
+      }
     }
     return null
   },
