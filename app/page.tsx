@@ -20,7 +20,7 @@ export default function LandingPage() {
                 Home
               </Link>
               <Link href="#features" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Features
+                Services
               </Link>
               <Link href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 How It Works
