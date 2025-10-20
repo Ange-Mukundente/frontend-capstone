@@ -9,13 +9,28 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 
+interface Vet {
+  id: number
+  name: string
+  specialty: string
+  location: string
+  phone: string
+  email: string
+  rating: number
+  reviews: number
+  experience: string
+  languages: string[]
+  availability: string
+  about: string
+}
+
 export default function ContactVet() {
   const router = useRouter()
-  const [selectedVet, setSelectedVet] = useState(null)
+  const [selectedVet, setSelectedVet] = useState<Vet | null>(null)
   const [showMessageForm, setShowMessageForm] = useState(false)
   const [message, setMessage] = useState("")
 
-  const vets = [
+  const vets: Vet[] = [
     {
       id: 1,
       name: "Dr. Sarah Mukamana",
@@ -65,6 +80,7 @@ export default function ContactVet() {
       alert("Please enter a message")
       return
     }
+    if (!selectedVet) return
     alert(`Message sent to ${selectedVet.name}`)
     setMessage("")
     setShowMessageForm(false)
@@ -92,12 +108,10 @@ export default function ContactVet() {
               <Card key={vet.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row gap-6">
-                    {/* Vet Photo Placeholder */}
                     <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
                       {vet.name.split(' ').map(n => n[0]).join('')}
                     </div>
 
-                    {/* Vet Info */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-2">
                         <div>
@@ -175,7 +189,6 @@ export default function ContactVet() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Message Form */}
             {showMessageForm && selectedVet && (
               <Card>
                 <CardHeader>

@@ -13,64 +13,54 @@ export default function FarmerDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [livestock, setLivestock] = useState([])
+  const [livestock, setLivestock] = useState<any[]>([])
 
-  // Fetch logged-in user data and livestock
+  // Fetch user & livestock data
   useEffect(() => {
-    const fetchUserData = () => {
-      try {
-        // Get user from localStorage
-        const userStr = localStorage.getItem("user")
-        
-        if (!userStr || userStr === "undefined") {
-          router.push("/auth/signin")
-          return
-        }
-
-        const userData = JSON.parse(userStr)
-        setUser(userData)
-
-        // Load livestock from localStorage
-        const storedLivestock = localStorage.getItem("livestock")
-        if (storedLivestock && storedLivestock !== "undefined") {
-          setLivestock(JSON.parse(storedLivestock))
-        } else {
-          // Initialize with default data
-          const defaultLivestock = [
-            { id: 1, name: "Cow #1", type: "Cattle", healthStatus: "healthy" },
-            { id: 2, name: "Cow #2", type: "Cattle", healthStatus: "sick" },
-            { id: 3, name: "Cow #3", type: "Cattle", healthStatus: "healthy" },
-            { id: 4, name: "Cow #4", type: "Cattle", healthStatus: "healthy" },
-            { id: 5, name: "Cow #5", type: "Cattle", healthStatus: "healthy" },
-            { id: 6, name: "Cow #6", type: "Cattle", healthStatus: "healthy" },
-            { id: 7, name: "Cow #7", type: "Cattle", healthStatus: "healthy" },
-            { id: 8, name: "Cow #8", type: "Cattle", healthStatus: "healthy" },
-            { id: 9, name: "Goat #1", type: "Goat", healthStatus: "healthy" },
-            { id: 10, name: "Goat #2", type: "Goat", healthStatus: "healthy" },
-            { id: 11, name: "Goat #3", type: "Goat", healthStatus: "healthy" },
-            { id: 12, name: "Goat #4", type: "Goat", healthStatus: "healthy" }
-          ]
-          setLivestock(defaultLivestock)
-          localStorage.setItem("livestock", JSON.stringify(defaultLivestock))
-        }
-        
-        setLoading(false)
-      } catch (error) {
-        console.error("Error loading user data:", error)
+    try {
+      const userStr = localStorage.getItem("user")
+      if (!userStr || userStr === "undefined") {
         router.push("/auth/signin")
+        return
       }
-    }
 
-    fetchUserData()
+      const userData = JSON.parse(userStr)
+      setUser(userData)
+
+      const storedLivestock = localStorage.getItem("livestock")
+      if (storedLivestock && storedLivestock !== "undefined") {
+        setLivestock(JSON.parse(storedLivestock))
+      } else {
+        const defaultLivestock = [
+          { id: 1, name: "Cow #1", type: "Cattle", healthStatus: "healthy" },
+          { id: 2, name: "Cow #2", type: "Cattle", healthStatus: "sick" },
+          { id: 3, name: "Cow #3", type: "Cattle", healthStatus: "healthy" },
+          { id: 4, name: "Cow #4", type: "Cattle", healthStatus: "healthy" },
+          { id: 5, name: "Cow #5", type: "Cattle", healthStatus: "healthy" },
+          { id: 6, name: "Cow #6", type: "Cattle", healthStatus: "healthy" },
+          { id: 7, name: "Cow #7", type: "Cattle", healthStatus: "healthy" },
+          { id: 8, name: "Cow #8", type: "Cattle", healthStatus: "healthy" },
+          { id: 9, name: "Goat #1", type: "Goat", healthStatus: "healthy" },
+          { id: 10, name: "Goat #2", type: "Goat", healthStatus: "healthy" },
+          { id: 11, name: "Goat #3", type: "Goat", healthStatus: "healthy" },
+          { id: 12, name: "Goat #4", type: "Goat", healthStatus: "healthy" },
+        ]
+        setLivestock(defaultLivestock)
+        localStorage.setItem("livestock", JSON.stringify(defaultLivestock))
+      }
+
+      setLoading(false)
+    } catch (error) {
+      console.error("Error loading user data:", error)
+      router.push("/auth/signin")
+    }
   }, [router])
 
-  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("user")
     router.push("/auth/signin")
   }
 
-  // Show loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -82,127 +72,48 @@ export default function FarmerDashboard() {
     )
   }
 
-  // If no user, don't render (will redirect)
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
   const farmerName = user.name || "Farmer"
-  
-  // Calculate livestock stats dynamically
-  const totalLivestock = livestock.length
-  const cattleCount = livestock.filter(l => l.type === "Cattle").length
-  const goatCount = livestock.filter(l => l.type === "Goat").length
-  const sheepCount = livestock.filter(l => l.type === "Sheep").length
-  const pigCount = livestock.filter(l => l.type === "Pig").length
-  const chickenCount = livestock.filter(l => l.type === "Chicken").length
-  
-  const healthyCount = livestock.filter(l => l.healthStatus === "healthy").length
-  const sickCount = livestock.filter(l => l.healthStatus === "sick" || l.healthStatus === "under-treatment").length
-  
-  // Build livestock summary text
-  const livestockBreakdown = []
-  if (cattleCount > 0) livestockBreakdown.push(`${cattleCount} cattle`)
-  if (goatCount > 0) livestockBreakdown.push(`${goatCount} goat${goatCount > 1 ? 's' : ''}`)
-  if (sheepCount > 0) livestockBreakdown.push(`${sheepCount} sheep`)
-  if (pigCount > 0) livestockBreakdown.push(`${pigCount} pig${pigCount > 1 ? 's' : ''}`)
-  if (chickenCount > 0) livestockBreakdown.push(`${chickenCount} chicken${chickenCount > 1 ? 's' : ''}`)
-  
-  const livestockSummaryText = livestockBreakdown.join(', ') || "No livestock"
-  
+
+  // Livestock stats
+  const livestockStats = livestock.reduce(
+    (acc, l) => {
+      acc.total++
+      acc[l.type] = (acc[l.type] || 0) + 1
+      if (l.healthStatus === "healthy") acc.healthy++
+      else if (["sick", "under-treatment"].includes(l.healthStatus)) acc.sick++
+      return acc
+    },
+    { total: 0, healthy: 0, sick: 0 } as any
+  )
+
+  const livestockSummary = Object.keys(livestockStats)
+    .filter(type => type !== "total" && type !== "healthy" && type !== "sick")
+    .map(type => {
+      const count = livestockStats[type]
+      const healthy = livestock.filter(l => l.type === type && l.healthStatus === "healthy").length
+      return { type, count, healthy, needsAttention: count - healthy }
+    })
+
+  const livestockSummaryText = Object.keys(livestockStats)
+    .filter(type => !["total", "healthy", "sick"].includes(type))
+    .map(type => `${livestockStats[type]} ${type.toLowerCase()}${livestockStats[type] > 1 ? "s" : ""}`)
+    .join(", ") || "No livestock"
+
   const upcomingAppointments = 2
   const pendingAlerts = 3
 
   const recentAppointments = [
-    {
-      id: 1,
-      vetName: "Dr. Sarah Mukamana",
-      date: "Oct 18, 2025",
-      time: "10:00 AM",
-      livestock: "Cow #3",
-      status: "confirmed",
-    },
-    {
-      id: 2,
-      vetName: "Dr. Paul Nkusi",
-      date: "Oct 20, 2025",
-      time: "2:00 PM",
-      livestock: "Goat #5",
-      status: "pending",
-    },
+    { id: 1, vetName: "Dr. Sarah Mukamana", date: "Oct 18, 2025", time: "10:00 AM", livestock: "Cow #3", status: "confirmed" },
+    { id: 2, vetName: "Dr. Paul Nkusi", date: "Oct 20, 2025", time: "2:00 PM", livestock: "Goat #5", status: "pending" },
   ]
 
   const healthAlerts = [
-    {
-      id: 1,
-      type: "vaccination",
-      message: "Vaccination due for Cow #1 and Cow #2",
-      date: "Oct 16, 2025",
-      priority: "high",
-    },
-    {
-      id: 2,
-      type: "disease",
-      message: "Foot and Mouth Disease alert in your district",
-      date: "Oct 14, 2025",
-      priority: "medium",
-    },
-    {
-      id: 3,
-      type: "checkup",
-      message: "Annual checkup recommended for Goat #3",
-      date: "Oct 12, 2025",
-      priority: "low",
-    },
+    { id: 1, type: "vaccination", message: "Vaccination due for Cow #1 and Cow #2", date: "Oct 16, 2025", priority: "high" },
+    { id: 2, type: "disease", message: "Foot and Mouth Disease alert in your district", date: "Oct 14, 2025", priority: "medium" },
+    { id: 3, type: "checkup", message: "Annual checkup recommended for Goat #3", date: "Oct 12, 2025", priority: "low" },
   ]
-
-  // Group livestock by type for summary
-  const livestockSummary = []
-  if (cattleCount > 0) {
-    const healthyCattle = livestock.filter(l => l.type === "Cattle" && l.healthStatus === "healthy").length
-    livestockSummary.push({
-      type: "Cattle",
-      count: cattleCount,
-      healthy: healthyCattle,
-      needsAttention: cattleCount - healthyCattle
-    })
-  }
-  if (goatCount > 0) {
-    const healthyGoats = livestock.filter(l => l.type === "Goat" && l.healthStatus === "healthy").length
-    livestockSummary.push({
-      type: "Goats",
-      count: goatCount,
-      healthy: healthyGoats,
-      needsAttention: goatCount - healthyGoats
-    })
-  }
-  if (sheepCount > 0) {
-    const healthySheep = livestock.filter(l => l.type === "Sheep" && l.healthStatus === "healthy").length
-    livestockSummary.push({
-      type: "Sheep",
-      count: sheepCount,
-      healthy: healthySheep,
-      needsAttention: sheepCount - healthySheep
-    })
-  }
-  if (pigCount > 0) {
-    const healthyPigs = livestock.filter(l => l.type === "Pig" && l.healthStatus === "healthy").length
-    livestockSummary.push({
-      type: "Pigs",
-      count: pigCount,
-      healthy: healthyPigs,
-      needsAttention: pigCount - healthyPigs
-    })
-  }
-  if (chickenCount > 0) {
-    const healthyChickens = livestock.filter(l => l.type === "Chicken" && l.healthStatus === "healthy").length
-    livestockSummary.push({
-      type: "Chickens",
-      count: chickenCount,
-      healthy: healthyChickens,
-      needsAttention: chickenCount - healthyChickens
-    })
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -211,12 +122,7 @@ export default function FarmerDashboard() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              >
+              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                 <Menu className="h-5 w-5" />
               </Button>
               <Link href="/" className="flex items-center gap-2">
@@ -229,9 +135,7 @@ export default function FarmerDashboard() {
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
-                {pendingAlerts > 0 && (
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-                )}
+                {pendingAlerts > 0 && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>}
               </Button>
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon">
@@ -262,7 +166,7 @@ export default function FarmerDashboard() {
               <Beef className="h-4 w-4 text-gray-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalLivestock}</div>
+              <div className="text-2xl font-bold">{livestockStats.total}</div>
               <p className="text-xs text-gray-500 mt-1">{livestockSummaryText}</p>
             </CardContent>
           </Card>
@@ -296,17 +200,17 @@ export default function FarmerDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {totalLivestock > 0 ? (sickCount === 0 ? "Good" : "Fair") : "N/A"}
+                {livestockStats.total > 0 ? (livestockStats.sick === 0 ? "Good" : "Fair") : "N/A"}
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                {totalLivestock > 0 ? `${healthyCount} of ${totalLivestock} healthy` : "No livestock"}
+                {livestockStats.total > 0 ? `${livestockStats.healthy} of ${livestockStats.total} healthy` : "No livestock"}
               </p>
             </CardContent>
           </Card>
         </div>
 
+        {/* Main & Sidebar */}
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Quick Actions */}
             <Card>
@@ -316,36 +220,17 @@ export default function FarmerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Button 
-                    className="w-full justify-start bg-green-600 hover:bg-green-700"
-                    onClick={() => router.push('/dashboard/farmer/appointments/book')}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Book Appointment
+                  <Button className="w-full justify-start bg-green-600 hover:bg-green-700" onClick={() => router.push('/dashboard/farmer/appointments/book')}>
+                    <Calendar className="mr-2 h-4 w-4" /> Book Appointment
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => router.push('/dashboard/farmer/livestock')}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Livestock
+                  <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/livestock')}>
+                    <Plus className="mr-2 h-4 w-4" /> Add Livestock
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => router.push('/dashboard/farmer/health-records')}
-                  >
-                    <Activity className="mr-2 h-4 w-4" />
-                    View Health Records
+                  <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/health-records')}>
+                    <Activity className="mr-2 h-4 w-4" /> View Health Records
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => router.push('/dashboard/farmer/contact-vet')}
-                  >
-                    <Phone className="mr-2 h-4 w-4" />
-                    Contact Vet
+                  <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/contact-vet')}>
+                    <Phone className="mr-2 h-4 w-4" /> Contact Vet
                   </Button>
                 </div>
               </CardContent>
@@ -357,37 +242,23 @@ export default function FarmerDashboard() {
                 <CardTitle>Upcoming Appointments</CardTitle>
                 <CardDescription>Your scheduled veterinary visits</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentAppointments.map((appointment) => (
-                    <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold">{appointment.vetName}</h4>
-                          <Badge variant={appointment.status === "confirmed" ? "default" : "secondary"}>
-                            {appointment.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {appointment.date} at {appointment.time}
-                        </p>
-                        <p className="text-sm text-gray-500">{appointment.livestock}</p>
+              <CardContent className="space-y-4">
+                {recentAppointments.map(a => (
+                  <div key={a.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold">{a.vetName}</h4>
+                        <Badge variant={a.status === "confirmed" ? "default" : "secondary"}>{a.status}</Badge>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => router.push('/dashboard/farmer/appointments')}
-                      >
-                        View Details
-                      </Button>
+                      <p className="text-sm text-gray-600">{a.date} at {a.time}</p>
+                      <p className="text-sm text-gray-500">{a.livestock}</p>
                     </div>
-                  ))}
-                </div>
-                <Button 
-                  variant="link" 
-                  className="w-full mt-4 text-green-600"
-                  onClick={() => router.push('/dashboard/farmer/appointments')}
-                >
+                    <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/farmer/appointments')}>
+                      View Details
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="link" className="w-full mt-4 text-green-600" onClick={() => router.push('/dashboard/farmer/appointments')}>
                   View All Appointments
                 </Button>
               </CardContent>
@@ -403,37 +274,27 @@ export default function FarmerDashboard() {
                 {livestockSummary.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-gray-600 mb-4">No livestock added yet</p>
-                    <Button 
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={() => router.push('/dashboard/farmer/livestock')}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Your First Livestock
+                    <Button className="bg-green-600 hover:bg-green-700" onClick={() => router.push('/dashboard/farmer/livestock')}>
+                      <Plus className="w-4 h-4 mr-2" /> Add Your First Livestock
                     </Button>
                   </div>
                 ) : (
                   <>
                     <div className="space-y-4">
-                      {livestockSummary.map((category, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                      {livestockSummary.map((c, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
                           <div>
-                            <h4 className="font-semibold">{category.type}</h4>
-                            <p className="text-sm text-gray-600">Total: {category.count}</p>
+                            <h4 className="font-semibold">{c.type}</h4>
+                            <p className="text-sm text-gray-600">Total: {c.count}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm text-green-600">✓ {category.healthy} Healthy</p>
-                            {category.needsAttention > 0 && (
-                              <p className="text-sm text-orange-600">⚠ {category.needsAttention} Needs attention</p>
-                            )}
+                            <p className="text-sm text-green-600">✓ {c.healthy} Healthy</p>
+                            {c.needsAttention > 0 && <p className="text-sm text-orange-600">⚠ {c.needsAttention} Needs attention</p>}
                           </div>
                         </div>
                       ))}
                     </div>
-                    <Button 
-                      variant="link" 
-                      className="w-full mt-4 text-green-600"
-                      onClick={() => router.push('/dashboard/farmer/livestock')}
-                    >
+                    <Button variant="link" className="w-full mt-4 text-green-600" onClick={() => router.push('/dashboard/farmer/livestock')}>
                       Manage Livestock
                     </Button>
                   </>
@@ -453,43 +314,26 @@ export default function FarmerDashboard() {
                 </CardTitle>
                 <CardDescription>Important notifications</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {healthAlerts.map((alert) => (
-                    <div
-                      key={alert.id}
-                      className={`p-3 rounded-lg border-l-4 ${
-                        alert.priority === "high"
-                          ? "border-red-500 bg-red-50"
-                          : alert.priority === "medium"
-                            ? "border-orange-500 bg-orange-50"
-                            : "border-blue-500 bg-blue-50"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-1">
-                        <Badge
-                          variant={alert.type === "vaccination" ? "default" : "secondary"}
-                          className="text-xs"
-                        >
-                          {alert.type}
-                        </Badge>
-                        <span className="text-xs text-gray-500">{alert.date}</span>
-                      </div>
-                      <p className="text-sm font-medium mt-2">{alert.message}</p>
+              <CardContent className="space-y-3">
+                {healthAlerts.map(alert => (
+                  <div
+                    key={alert.id}
+                    className={`p-3 rounded-lg border-l-4 ${alert.priority === "high" ? "border-red-500 bg-red-50" : alert.priority === "medium" ? "border-orange-500 bg-orange-50" : "border-blue-500 bg-blue-50"}`}
+                  >
+                    <div className="flex items-start justify-between mb-1">
+                      <Badge variant={alert.type === "vaccination" ? "default" : "secondary"} className="text-xs">{alert.type}</Badge>
+                      <span className="text-xs text-gray-500">{alert.date}</span>
                     </div>
-                  ))}
-                </div>
-                <Button 
-                  variant="link" 
-                  className="w-full mt-4 text-green-600"
-                  onClick={() => router.push('/dashboard/farmer/alerts')}
-                >
+                    <p className="text-sm font-medium mt-2">{alert.message}</p>
+                  </div>
+                ))}
+                <Button variant="link" className="w-full mt-4 text-green-600" onClick={() => router.push('/dashboard/farmer/alerts')}>
                   View All Alerts
                 </Button>
               </CardContent>
             </Card>
 
-            {/* SMS Access Info */}
+            {/* SMS Access */}
             <Card>
               <CardHeader>
                 <CardTitle>SMS Access</CardTitle>
@@ -511,7 +355,7 @@ export default function FarmerDashboard() {
               </CardContent>
             </Card>
 
-            {/* Support */}
+             {/* Support */}
             <Card>
               <CardHeader>
                 <CardTitle>Need Help?</CardTitle>

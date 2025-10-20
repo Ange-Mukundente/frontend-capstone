@@ -11,12 +11,26 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
+// --- Define Livestock type ---
+type Livestock = {
+  id: number
+  name: string
+  type: string
+  breed: string
+  age: string
+  weight: string
+  healthStatus: string
+  lastCheckup: string
+  notes: string
+}
+
 export default function LivestockManagement() {
   const router = useRouter()
-  const [livestock, setLivestock] = useState([])
+
+  const [livestock, setLivestock] = useState<Livestock[]>([])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
-  const [selectedLivestock, setSelectedLivestock] = useState(null)
+  const [selectedLivestock, setSelectedLivestock] = useState<Livestock | null>(null)
   const [formData, setFormData] = useState({
     name: "",
     type: "Cattle",
@@ -27,68 +41,42 @@ export default function LivestockManagement() {
     notes: ""
   })
 
-  // Load livestock from localStorage on component mount
-  useEffect(() => {
-    const loadLivestock = () => {
-      try {
-        const storedLivestock = localStorage.getItem("livestock")
-        if (storedLivestock && storedLivestock !== "undefined") {
-          setLivestock(JSON.parse(storedLivestock))
-        } else {
-          // Initialize with sample data if empty
-          const sampleData = [
-            {
-              id: 1,
-              name: "Cow #1",
-              type: "Cattle",
-              breed: "Friesian",
-              age: "3 years",
-              weight: "450kg",
-              healthStatus: "healthy",
-              lastCheckup: "2025-10-10",
-              notes: "Vaccination up to date"
-            },
-            {
-              id: 2,
-              name: "Cow #2",
-              type: "Cattle",
-              breed: "Jersey",
-              age: "2 years",
-              weight: "380kg",
-              healthStatus: "sick",
-              lastCheckup: "2025-10-15",
-              notes: "Showing signs of fever, treatment started"
-            },
-            {
-              id: 3,
-              name: "Goat #1",
-              type: "Goat",
-              breed: "Boer",
-              age: "1 year",
-              weight: "45kg",
-              healthStatus: "healthy",
-              lastCheckup: "2025-10-12",
-              notes: "Good condition"
-            }
-          ]
-          setLivestock(sampleData)
-          localStorage.setItem("livestock", JSON.stringify(sampleData))
-        }
-      } catch (error) {
-        console.error("Error loading livestock:", error)
-      }
+  // --- Helper to safely parse JSON ---
+  const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
+    if (typeof window === "undefined") return defaultValue
+    try {
+      const stored = localStorage.getItem(key)
+      if (!stored || stored === "undefined") return defaultValue
+      const parsed = JSON.parse(stored)
+      return Array.isArray(parsed) ? (parsed as T) : defaultValue
+    } catch (err) {
+      console.error(`Error parsing ${key} from localStorage`, err)
+      return defaultValue
     }
+  }
 
-    loadLivestock()
+  // --- useEffect to load livestock ---
+  useEffect(() => {
+    const sampleData: Livestock[] = [
+      { id: 1, name: "Cow #1", type: "Cattle", breed: "Friesian", age: "3 years", weight: "450kg", healthStatus: "healthy", lastCheckup: "2025-10-10", notes: "Vaccination up to date" },
+      { id: 2, name: "Cow #2", type: "Cattle", breed: "Jersey", age: "2 years", weight: "380kg", healthStatus: "sick", lastCheckup: "2025-10-15", notes: "Showing signs of fever, treatment started" },
+      { id: 3, name: "Goat #1", type: "Goat", breed: "Boer", age: "1 year", weight: "45kg", healthStatus: "healthy", lastCheckup: "2025-10-12", notes: "Good condition" }
+    ]
+
+    const storedLivestock = loadFromLocalStorage<Livestock[]>("livestock", sampleData)
+    setLivestock(storedLivestock)
+
+    if (!localStorage.getItem("livestock")) {
+      localStorage.setItem("livestock", JSON.stringify(sampleData))
+    }
   }, [])
 
-  // Save livestock to localStorage whenever it changes
-  const saveLivestock = (updatedLivestock) => {
+  const saveLivestock = (updatedLivestock: Livestock[]) => {
     setLivestock(updatedLivestock)
     localStorage.setItem("livestock", JSON.stringify(updatedLivestock))
   }
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
@@ -98,20 +86,20 @@ export default function LivestockManagement() {
       alert("Please enter livestock name")
       return
     }
-    
-    const newLivestock = {
+
+    const newLivestock: Livestock = {
       id: Date.now(),
       ...formData,
       lastCheckup: new Date().toISOString().split('T')[0]
     }
-    const updatedLivestock = [...livestock, newLivestock]
-    saveLivestock(updatedLivestock)
+
+    saveLivestock([...livestock, newLivestock])
     setIsAddModalOpen(false)
     resetForm()
     alert("Livestock added successfully!")
   }
 
-  const openUpdateModal = (animal) => {
+  const openUpdateModal = (animal: Livestock) => {
     setSelectedLivestock(animal)
     setFormData({
       name: animal.name,
@@ -131,13 +119,9 @@ export default function LivestockManagement() {
       return
     }
 
-    const updatedLivestock = livestock.map(animal => 
-      animal.id === selectedLivestock.id 
-        ? { 
-            ...animal, 
-            ...formData,
-            lastCheckup: new Date().toISOString().split('T')[0]
-          }
+    const updatedLivestock = livestock.map(animal =>
+      animal.id === selectedLivestock?.id
+        ? { ...animal, ...formData, lastCheckup: new Date().toISOString().split('T')[0] }
         : animal
     )
     saveLivestock(updatedLivestock)
@@ -146,7 +130,7 @@ export default function LivestockManagement() {
     alert("Livestock updated successfully!")
   }
 
-  const handleDeleteLivestock = (id) => {
+  const handleDeleteLivestock = (id: number) => {
     if (confirm("Are you sure you want to delete this livestock?")) {
       const updatedLivestock = livestock.filter(animal => animal.id !== id)
       saveLivestock(updatedLivestock)
@@ -167,8 +151,8 @@ export default function LivestockManagement() {
     setSelectedLivestock(null)
   }
 
-  const getStatusBadge = (status) => {
-    switch(status) {
+  const getStatusBadge = (status: string) => {
+    switch (status) {
       case "healthy":
         return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Healthy</Badge>
       case "sick":
@@ -511,14 +495,13 @@ export default function LivestockManagement() {
                 <Textarea
                   id="update-notes"
                   name="notes"
-                  placeholder="Any additional information..."
                   value={formData.notes}
                   onChange={handleInputChange}
                   rows={3}
                 />
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleUpdateLivestock} className="flex-1 bg-green-600 hover:bg-green-700">
+                <Button onClick={handleUpdateLivestock} className="flex-1 bg-blue-600 hover:bg-blue-700">
                   Update Livestock
                 </Button>
                 <Button 

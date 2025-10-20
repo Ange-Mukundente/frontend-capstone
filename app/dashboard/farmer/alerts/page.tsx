@@ -44,8 +44,9 @@ export default function HealthAlerts() {
     }
   ]
 
-  const getPriorityColor = (priority) => {
-    switch(priority) {
+  // ✅ Add type annotation for the parameter
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
       case "high":
         return "border-red-500 bg-red-50"
       case "medium":
@@ -57,8 +58,9 @@ export default function HealthAlerts() {
     }
   }
 
-  const getPriorityBadge = (priority) => {
-    switch(priority) {
+  // ✅ Add type annotation for the parameter
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
       case "high":
         return <Badge className="bg-red-500">High Priority</Badge>
       case "medium":
@@ -77,7 +79,7 @@ export default function HealthAlerts() {
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
-              </Button>
+          </Button>
           <div>
             <h1 className="text-3xl font-bold">Health Alerts</h1>
             <p className="text-gray-600 mt-2">Important notifications about your livestock</p>
@@ -141,7 +143,10 @@ export default function HealthAlerts() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <Badge variant={alert.type === "vaccination" ? "default" : "secondary"} className="text-xs">
+                          <Badge
+                            variant={alert.type === "vaccination" ? "default" : "secondary"}
+                            className="text-xs"
+                          >
                             {alert.type}
                           </Badge>
                           {getPriorityBadge(alert.priority)}
@@ -150,9 +155,9 @@ export default function HealthAlerts() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <p className="text-base font-medium mb-4 ml-13">{alert.message}</p>
-                  
+
                   <div className="flex gap-2 ml-13">
                     <Button size="sm" className="bg-green-600 hover:bg-green-700">
                       Take Action

@@ -4,13 +4,32 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Calendar, Clock, ArrowLeft, User, MapPin, Phone, Mail, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+
+// Define Appointment type
+type AppointmentStatus = "pending" | "confirmed" | "completed" | "cancelled"
+
+interface Appointment {
+  id: number
+  vetName: string
+  vetSpecialty: string
+  vetPhone: string
+  vetEmail: string
+  date: string
+  time: string
+  livestockName: string
+  reason: string
+  status: AppointmentStatus
+  location: string
+  notes?: string
+  createdAt?: string
+}
 
 export default function AllAppointments() {
   const router = useRouter()
-  const [appointments, setAppointments] = useState([])
-  const [filter, setFilter] = useState("all")
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [filter, setFilter] = useState<AppointmentStatus | "all">("all")
 
   // Load appointments from localStorage
   useEffect(() => {
@@ -18,13 +37,11 @@ export default function AllAppointments() {
       try {
         const storedAppointments = localStorage.getItem("appointments")
         if (storedAppointments && storedAppointments !== "undefined") {
-          const parsedAppointments = JSON.parse(storedAppointments)
-          // Sort by date (newest first)
-          parsedAppointments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          const parsedAppointments: Appointment[] = JSON.parse(storedAppointments)
+          parsedAppointments.sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime())
           setAppointments(parsedAppointments)
         } else {
-          // Default appointments for demo
-          const defaultAppointments = [
+          const defaultAppointments: Appointment[] = [
             {
               id: 1,
               vetName: "Dr. Sarah Mukamana",
@@ -37,7 +54,8 @@ export default function AllAppointments() {
               reason: "Routine Checkup",
               status: "confirmed",
               location: "Kigali District",
-              notes: ""
+              notes: "",
+              createdAt: new Date().toISOString()
             },
             {
               id: 2,
@@ -51,7 +69,8 @@ export default function AllAppointments() {
               reason: "Vaccination",
               status: "pending",
               location: "Gasabo District",
-              notes: ""
+              notes: "",
+              createdAt: new Date().toISOString()
             }
           ]
           setAppointments(defaultAppointments)
@@ -65,7 +84,7 @@ export default function AllAppointments() {
     loadAppointments()
   }, [])
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status: AppointmentStatus) => {
     switch(status) {
       case "confirmed":
         return <Badge className="bg-green-500">Confirmed</Badge>
@@ -75,8 +94,6 @@ export default function AllAppointments() {
         return <Badge className="bg-blue-500">Completed</Badge>
       case "cancelled":
         return <Badge className="bg-red-500">Cancelled</Badge>
-      default:
-        return <Badge>Unknown</Badge>
     }
   }
 
@@ -85,9 +102,9 @@ export default function AllAppointments() {
     return apt.status === filter
   })
 
-  const handleCancelAppointment = (id) => {
+  const handleCancelAppointment = (id: number) => {
     if (confirm("Are you sure you want to cancel this appointment?")) {
-      const updatedAppointments = appointments.map(apt => 
+      const updatedAppointments: Appointment[] = appointments.map(apt => 
         apt.id === id ? { ...apt, status: "cancelled" } : apt
       )
       setAppointments(updatedAppointments)
@@ -223,7 +240,7 @@ export default function AllAppointments() {
 
                     {/* Right Side - Actions */}
                     <div className="flex md:flex-col gap-2">
-                      {appointment.status === "pending" || appointment.status === "confirmed" ? (
+                      {(appointment.status === "pending" || appointment.status === "confirmed") && (
                         <Button 
                           variant="outline" 
                           size="sm"
@@ -232,7 +249,7 @@ export default function AllAppointments() {
                         >
                           Cancel
                         </Button>
-                      ) : null}
+                      )}
                     </div>
                   </div>
                 </CardContent>

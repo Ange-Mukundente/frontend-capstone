@@ -4,13 +4,30 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Calendar, FileText, Activity, Pill } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+
+interface Livestock {
+  id: number
+  name: string
+}
+
+interface HealthRecord {
+  id: number
+  livestockId: number
+  livestockName: string
+  date: string
+  type: "vaccination" | "treatment" | "checkup" | string
+  title: string
+  vetName: string
+  notes: string
+  medications: string[]
+}
 
 export default function HealthRecords() {
   const router = useRouter()
-  const [selectedLivestock, setSelectedLivestock] = useState("all")
-  const [livestock, setLivestock] = useState([])
+  const [selectedLivestock, setSelectedLivestock] = useState<string>("all")
+  const [livestock, setLivestock] = useState<Livestock[]>([])
 
   // Load livestock from localStorage
   useEffect(() => {
@@ -18,11 +35,9 @@ export default function HealthRecords() {
       try {
         const storedLivestock = localStorage.getItem("livestock")
         if (storedLivestock && storedLivestock !== "undefined") {
-          const parsedLivestock = JSON.parse(storedLivestock)
-          setLivestock(parsedLivestock)
+          setLivestock(JSON.parse(storedLivestock))
         } else {
-          // Default livestock if none exists
-          const defaultLivestock = [
+          const defaultLivestock: Livestock[] = [
             { id: 1, name: "Cow #1" },
             { id: 2, name: "Cow #2" },
             { id: 3, name: "Goat #1" }
@@ -31,7 +46,6 @@ export default function HealthRecords() {
         }
       } catch (error) {
         console.error("Error loading livestock:", error)
-        // Fallback to default data
         setLivestock([
           { id: 1, name: "Cow #1" },
           { id: 2, name: "Cow #2" },
@@ -43,7 +57,7 @@ export default function HealthRecords() {
     loadLivestock()
   }, [])
 
-  const healthRecords = [
+  const healthRecords: HealthRecord[] = [
     {
       id: 1,
       livestockId: 1,
@@ -94,29 +108,21 @@ export default function HealthRecords() {
     ? healthRecords 
     : healthRecords.filter(r => r.livestockId === parseInt(selectedLivestock))
 
-  const getRecordIcon = (type) => {
+  const getRecordIcon = (type: string) => {
     switch(type) {
-      case "vaccination":
-        return <Pill className="w-5 h-5 text-blue-600" />
-      case "treatment":
-        return <Activity className="w-5 h-5 text-red-600" />
-      case "checkup":
-        return <FileText className="w-5 h-5 text-green-600" />
-      default:
-        return <FileText className="w-5 h-5 text-gray-600" />
+      case "vaccination": return <Pill className="w-5 h-5 text-blue-600" />
+      case "treatment": return <Activity className="w-5 h-5 text-red-600" />
+      case "checkup": return <FileText className="w-5 h-5 text-green-600" />
+      default: return <FileText className="w-5 h-5 text-gray-600" />
     }
   }
 
-  const getRecordBadge = (type) => {
+  const getRecordBadge = (type: string) => {
     switch(type) {
-      case "vaccination":
-        return <Badge className="bg-blue-500">Vaccination</Badge>
-      case "treatment":
-        return <Badge className="bg-red-500">Treatment</Badge>
-      case "checkup":
-        return <Badge className="bg-green-500">Checkup</Badge>
-      default:
-        return <Badge>Other</Badge>
+      case "vaccination": return <Badge className="bg-blue-500">Vaccination</Badge>
+      case "treatment": return <Badge className="bg-red-500">Treatment</Badge>
+      case "checkup": return <Badge className="bg-green-500">Checkup</Badge>
+      default: return <Badge>Other</Badge>
     }
   }
 
