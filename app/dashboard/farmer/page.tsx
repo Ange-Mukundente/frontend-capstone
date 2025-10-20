@@ -13,8 +13,9 @@ export default function FarmerDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [livestock, setLivestock] = useState([])
 
-  // Fetch logged-in user data
+  // Fetch logged-in user data and livestock
   useEffect(() => {
     const fetchUserData = () => {
       try {
@@ -22,13 +23,37 @@ export default function FarmerDashboard() {
         const userStr = localStorage.getItem("user")
         
         if (!userStr || userStr === "undefined") {
-          // No user logged in, redirect to login
           router.push("/auth/signin")
           return
         }
 
         const userData = JSON.parse(userStr)
         setUser(userData)
+
+        // Load livestock from localStorage
+        const storedLivestock = localStorage.getItem("livestock")
+        if (storedLivestock && storedLivestock !== "undefined") {
+          setLivestock(JSON.parse(storedLivestock))
+        } else {
+          // Initialize with default data
+          const defaultLivestock = [
+            { id: 1, name: "Cow #1", type: "Cattle", healthStatus: "healthy" },
+            { id: 2, name: "Cow #2", type: "Cattle", healthStatus: "sick" },
+            { id: 3, name: "Cow #3", type: "Cattle", healthStatus: "healthy" },
+            { id: 4, name: "Cow #4", type: "Cattle", healthStatus: "healthy" },
+            { id: 5, name: "Cow #5", type: "Cattle", healthStatus: "healthy" },
+            { id: 6, name: "Cow #6", type: "Cattle", healthStatus: "healthy" },
+            { id: 7, name: "Cow #7", type: "Cattle", healthStatus: "healthy" },
+            { id: 8, name: "Cow #8", type: "Cattle", healthStatus: "healthy" },
+            { id: 9, name: "Goat #1", type: "Goat", healthStatus: "healthy" },
+            { id: 10, name: "Goat #2", type: "Goat", healthStatus: "healthy" },
+            { id: 11, name: "Goat #3", type: "Goat", healthStatus: "healthy" },
+            { id: 12, name: "Goat #4", type: "Goat", healthStatus: "healthy" }
+          ]
+          setLivestock(defaultLivestock)
+          localStorage.setItem("livestock", JSON.stringify(defaultLivestock))
+        }
+        
         setLoading(false)
       } catch (error) {
         console.error("Error loading user data:", error)
@@ -63,7 +88,28 @@ export default function FarmerDashboard() {
   }
 
   const farmerName = user.name || "Farmer"
-  const totalLivestock = 12
+  
+  // Calculate livestock stats dynamically
+  const totalLivestock = livestock.length
+  const cattleCount = livestock.filter(l => l.type === "Cattle").length
+  const goatCount = livestock.filter(l => l.type === "Goat").length
+  const sheepCount = livestock.filter(l => l.type === "Sheep").length
+  const pigCount = livestock.filter(l => l.type === "Pig").length
+  const chickenCount = livestock.filter(l => l.type === "Chicken").length
+  
+  const healthyCount = livestock.filter(l => l.healthStatus === "healthy").length
+  const sickCount = livestock.filter(l => l.healthStatus === "sick" || l.healthStatus === "under-treatment").length
+  
+  // Build livestock summary text
+  const livestockBreakdown = []
+  if (cattleCount > 0) livestockBreakdown.push(`${cattleCount} cattle`)
+  if (goatCount > 0) livestockBreakdown.push(`${goatCount} goat${goatCount > 1 ? 's' : ''}`)
+  if (sheepCount > 0) livestockBreakdown.push(`${sheepCount} sheep`)
+  if (pigCount > 0) livestockBreakdown.push(`${pigCount} pig${pigCount > 1 ? 's' : ''}`)
+  if (chickenCount > 0) livestockBreakdown.push(`${chickenCount} chicken${chickenCount > 1 ? 's' : ''}`)
+  
+  const livestockSummaryText = livestockBreakdown.join(', ') || "No livestock"
+  
   const upcomingAppointments = 2
   const pendingAlerts = 3
 
@@ -110,10 +156,53 @@ export default function FarmerDashboard() {
     },
   ]
 
-  const livestockSummary = [
-    { type: "Cattle", count: 8, healthy: 7, needsAttention: 1 },
-    { type: "Goats", count: 4, healthy: 4, needsAttention: 0 },
-  ]
+  // Group livestock by type for summary
+  const livestockSummary = []
+  if (cattleCount > 0) {
+    const healthyCattle = livestock.filter(l => l.type === "Cattle" && l.healthStatus === "healthy").length
+    livestockSummary.push({
+      type: "Cattle",
+      count: cattleCount,
+      healthy: healthyCattle,
+      needsAttention: cattleCount - healthyCattle
+    })
+  }
+  if (goatCount > 0) {
+    const healthyGoats = livestock.filter(l => l.type === "Goat" && l.healthStatus === "healthy").length
+    livestockSummary.push({
+      type: "Goats",
+      count: goatCount,
+      healthy: healthyGoats,
+      needsAttention: goatCount - healthyGoats
+    })
+  }
+  if (sheepCount > 0) {
+    const healthySheep = livestock.filter(l => l.type === "Sheep" && l.healthStatus === "healthy").length
+    livestockSummary.push({
+      type: "Sheep",
+      count: sheepCount,
+      healthy: healthySheep,
+      needsAttention: sheepCount - healthySheep
+    })
+  }
+  if (pigCount > 0) {
+    const healthyPigs = livestock.filter(l => l.type === "Pig" && l.healthStatus === "healthy").length
+    livestockSummary.push({
+      type: "Pigs",
+      count: pigCount,
+      healthy: healthyPigs,
+      needsAttention: pigCount - healthyPigs
+    })
+  }
+  if (chickenCount > 0) {
+    const healthyChickens = livestock.filter(l => l.type === "Chicken" && l.healthStatus === "healthy").length
+    livestockSummary.push({
+      type: "Chickens",
+      count: chickenCount,
+      healthy: healthyChickens,
+      needsAttention: chickenCount - healthyChickens
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -174,7 +263,7 @@ export default function FarmerDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalLivestock}</div>
-              <p className="text-xs text-gray-500 mt-1">8 cattle, 4 goats</p>
+              <p className="text-xs text-gray-500 mt-1">{livestockSummaryText}</p>
             </CardContent>
           </Card>
 
@@ -206,8 +295,12 @@ export default function FarmerDashboard() {
               <Activity className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">Good</div>
-              <p className="text-xs text-gray-500 mt-1">11 of 12 healthy</p>
+              <div className="text-2xl font-bold text-green-600">
+                {totalLivestock > 0 ? (sickCount === 0 ? "Good" : "Fair") : "N/A"}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {totalLivestock > 0 ? `${healthyCount} of ${totalLivestock} healthy` : "No livestock"}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -223,19 +316,34 @@ export default function FarmerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Button className="w-full justify-start bg-green-600 hover:bg-green-700">
+                  <Button 
+                    className="w-full justify-start bg-green-600 hover:bg-green-700"
+                    onClick={() => router.push('/dashboard/farmer/appointments/book')}
+                  >
                     <Calendar className="mr-2 h-4 w-4" />
                     Book Appointment
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => router.push('/dashboard/farmer/livestock')}
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     Add Livestock
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => router.push('/dashboard/farmer/health-records')}
+                  >
                     <Activity className="mr-2 h-4 w-4" />
                     View Health Records
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => router.push('/dashboard/farmer/contact-vet')}
+                  >
                     <Phone className="mr-2 h-4 w-4" />
                     Contact Vet
                   </Button>
@@ -265,13 +373,21 @@ export default function FarmerDashboard() {
                         </p>
                         <p className="text-sm text-gray-500">{appointment.livestock}</p>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => router.push('/dashboard/farmer/appointments')}
+                      >
                         View Details
                       </Button>
                     </div>
                   ))}
                 </div>
-                <Button variant="link" className="w-full mt-4 text-green-600">
+                <Button 
+                  variant="link" 
+                  className="w-full mt-4 text-green-600"
+                  onClick={() => router.push('/dashboard/farmer/appointments')}
+                >
                   View All Appointments
                 </Button>
               </CardContent>
@@ -284,22 +400,44 @@ export default function FarmerDashboard() {
                 <CardDescription>Overview of your animals</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {livestockSummary.map((category, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-semibold">{category.type}</h4>
-                        <p className="text-sm text-gray-600">Total: {category.count}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-green-600">✓ {category.healthy} Healthy</p>
-                        {category.needsAttention > 0 && (
-                          <p className="text-sm text-orange-600">⚠ {category.needsAttention} Needs attention</p>
-                        )}
-                      </div>
+                {livestockSummary.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600 mb-4">No livestock added yet</p>
+                    <Button 
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => router.push('/dashboard/farmer/livestock')}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Your First Livestock
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-4">
+                      {livestockSummary.map((category, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div>
+                            <h4 className="font-semibold">{category.type}</h4>
+                            <p className="text-sm text-gray-600">Total: {category.count}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-green-600">✓ {category.healthy} Healthy</p>
+                            {category.needsAttention > 0 && (
+                              <p className="text-sm text-orange-600">⚠ {category.needsAttention} Needs attention</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                    <Button 
+                      variant="link" 
+                      className="w-full mt-4 text-green-600"
+                      onClick={() => router.push('/dashboard/farmer/livestock')}
+                    >
+                      Manage Livestock
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -341,7 +479,11 @@ export default function FarmerDashboard() {
                     </div>
                   ))}
                 </div>
-                <Button variant="link" className="w-full mt-4 text-green-600">
+                <Button 
+                  variant="link" 
+                  className="w-full mt-4 text-green-600"
+                  onClick={() => router.push('/dashboard/farmer/alerts')}
+                >
                   View All Alerts
                 </Button>
               </CardContent>
@@ -375,11 +517,19 @@ export default function FarmerDashboard() {
                 <CardTitle>Need Help?</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => window.location.href = 'tel:+250788000000'}
+                >
                   <Phone className="mr-2 h-4 w-4" />
                   Emergency Hotline
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => router.push('/dashboard/farmer/help')}
+                >
                   <Bell className="mr-2 h-4 w-4" />
                   User Guide
                 </Button>
