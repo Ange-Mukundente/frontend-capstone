@@ -160,54 +160,59 @@ export default function FarmerDashboard() {
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Livestock</CardTitle>
-              <Beef className="h-4 w-4 text-gray-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{livestockStats.total}</div>
-              <p className="text-xs text-gray-500 mt-1">{livestockSummaryText}</p>
-            </CardContent>
-          </Card>
+            {/* Total Livestock */}
+            <Card onClick={() => router.push('/dashboard/farmer/livestock')} className="cursor-pointer hover:shadow-md transition">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Total Livestock</CardTitle>
+                <Beef className="h-4 w-4 text-gray-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{livestockStats.total}</div>
+                <p className="text-xs text-gray-500 mt-1">{livestockSummaryText}</p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Appointments</CardTitle>
-              <Calendar className="h-4 w-4 text-gray-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{upcomingAppointments}</div>
-              <p className="text-xs text-gray-500 mt-1">This week</p>
-            </CardContent>
-          </Card>
+            {/* Appointments */}
+            <Card onClick={() => router.push('/dashboard/farmer/appointments')} className="cursor-pointer hover:shadow-md transition">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Appointments</CardTitle>
+                <Calendar className="h-4 w-4 text-gray-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{upcomingAppointments}</div>
+                <p className="text-xs text-gray-500 mt-1">This week</p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Health Alerts</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{pendingAlerts}</div>
-              <p className="text-xs text-gray-500 mt-1">Needs attention</p>
-            </CardContent>
-          </Card>
+            {/* Health Alerts */}
+            <Card onClick={() => router.push('/dashboard/farmer/alerts')} className="cursor-pointer hover:shadow-md transition">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Health Alerts</CardTitle>
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-600">{pendingAlerts}</div>
+                <p className="text-xs text-gray-500 mt-1">Needs attention</p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Health Status</CardTitle>
-              <Activity className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {livestockStats.total > 0 ? (livestockStats.sick === 0 ? "Good" : "Fair") : "N/A"}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {livestockStats.total > 0 ? `${livestockStats.healthy} of ${livestockStats.total} healthy` : "No livestock"}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Health Status */}
+            <Card onClick={() => router.push('/dashboard/farmer/health-records')} className="cursor-pointer hover:shadow-md transition">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Health Status</CardTitle>
+                <Activity className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {livestockStats.total > 0 ? (livestockStats.sick === 0 ? "Good" : "Fair") : "N/A"}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {livestockStats.total > 0 ? `${livestockStats.healthy} of ${livestockStats.total} healthy` : "No livestock"}
+                </p>
+              </CardContent>
+            </Card>
+</div>
+
 
         {/* Main & Sidebar */}
         <div className="grid lg:grid-cols-3 gap-6">

@@ -1,3 +1,5 @@
+// lib/auth.ts
+
 import type { User, LoginCredentials, RegisterData } from "@/types"
 import { apiClient } from "./api-client"
 import API_ENDPOINTS from "@/config/api"
@@ -17,7 +19,10 @@ export const authService = {
     return response
   },
 
+  // ✅ Updated register method
   async register(data: RegisterData) {
+    console.log("📦 Sending to backend:", JSON.stringify(data, null, 2))
+
     const response = await apiClient.post<{ token: string; user: User }>(
       API_ENDPOINTS.REGISTER,
       data

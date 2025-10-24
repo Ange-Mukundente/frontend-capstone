@@ -19,8 +19,8 @@ export default function LandingPage() {
               <Link href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Home
               </Link>
-              <Link href="#services" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Services
+              <Link href="#features" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Features
               </Link>
               <Link href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 How It Works

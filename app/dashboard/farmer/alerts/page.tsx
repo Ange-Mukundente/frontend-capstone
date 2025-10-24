@@ -158,14 +158,14 @@ export default function HealthAlerts() {
 
                   <p className="text-base font-medium mb-4 ml-13">{alert.message}</p>
 
-                  <div className="flex gap-2 ml-13">
+                  {/* <div className="flex gap-2 ml-13">
                     <Button size="sm" className="bg-green-600 hover:bg-green-700">
                       Take Action
                     </Button>
                     <Button size="sm" variant="outline">
                       Dismiss
                     </Button>
-                  </div>
+                  </div> */}
                 </CardContent>
               </Card>
             ))

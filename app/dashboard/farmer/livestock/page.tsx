@@ -41,6 +41,12 @@ export default function LivestockManagement() {
     notes: ""
   })
 
+  // Pagination and Filter/Search State
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filterStatus, setFilterStatus] = useState("All")
+
   // --- Helper to safely parse JSON ---
   const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
     if (typeof window === "undefined") return defaultValue
@@ -166,10 +172,27 @@ export default function LivestockManagement() {
     }
   }
 
+  // --- Filtered Livestock based on search + status ---
+  const filteredLivestock = livestock.filter((animal) => {
+    const matchesSearch =
+      animal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      animal.type.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesStatus =
+      filterStatus === "All" || animal.healthStatus === filterStatus.toLowerCase()
+
+    return matchesSearch && matchesStatus
+  })
+
+  const indexOfLast = currentPage * itemsPerPage
+  const indexOfFirst = indexOfLast - itemsPerPage
+  const currentAnimals = filteredLivestock.slice(indexOfFirst, indexOfLast)
+  const totalPages = Math.ceil(filteredLivestock.length / itemsPerPage)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-4">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -187,54 +210,41 @@ export default function LivestockManagement() {
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Livestock</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{livestock.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Healthy</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {livestock.filter(a => a.healthStatus === "healthy").length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Sick</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {livestock.filter(a => a.healthStatus === "sick").length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Under Treatment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
-                {livestock.filter(a => a.healthStatus === "under-treatment").length}
-              </div>
-            </CardContent>
-          </Card>
+        {/* --- Search and Filter --- */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+          <Input
+            placeholder="Search by name or type..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setCurrentPage(1)
+            }}
+            className="flex-1"
+          />
+          <select
+            value={filterStatus}
+            onChange={(e) => {
+              setFilterStatus(e.target.value)
+              setCurrentPage(1)
+            }}
+            className="border px-3 py-2 rounded-md"
+          >
+            <option value="All">All</option>
+            <option value="healthy">Healthy</option>
+            <option value="sick">Sick</option>
+            <option value="under-treatment">Under Treatment</option>
+            <option value="recovering">Recovering</option>
+          </select>
         </div>
 
-        {livestock.length === 0 ? (
+        {/* --- Cards Grid --- */}
+        {filteredLivestock.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Plus className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No livestock yet</h3>
+              <h3 className="text-lg font-semibold mb-2">No livestock found</h3>
               <p className="text-gray-600 mb-4">Add your first livestock to get started</p>
               <Button 
                 className="bg-green-600 hover:bg-green-700"
@@ -246,89 +256,93 @@ export default function LivestockManagement() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {livestock.map((animal) => (
-              <Card key={animal.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle>{animal.name}</CardTitle>
-                      <CardDescription>{animal.type} - {animal.breed}</CardDescription>
-                    </div>
-                    {getStatusBadge(animal.healthStatus)}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Age:</span>
-                      <span className="font-medium">{animal.age}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Weight:</span>
-                      <span className="font-medium">{animal.weight}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Last Checkup:</span>
-                      <span className="font-medium">{animal.lastCheckup}</span>
-                    </div>
-                    {animal.notes && (
-                      <div className="text-sm mt-2 p-2 bg-gray-50 rounded">
-                        <p className="text-gray-600 italic">{animal.notes}</p>
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentAnimals.map((animal) => (
+                <Card key={animal.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle>{animal.name}</CardTitle>
+                        <CardDescription>{animal.type} - {animal.breed}</CardDescription>
                       </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => openUpdateModal(animal)}
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Update
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="text-red-600 hover:bg-red-50"
-                      onClick={() => handleDeleteLivestock(animal.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      {getStatusBadge(animal.healthStatus)}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Age:</span>
+                        <span className="font-medium">{animal.age}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Weight:</span>
+                        <span className="font-medium">{animal.weight}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Last Checkup:</span>
+                        <span className="font-medium">{animal.lastCheckup}</span>
+                      </div>
+                      {animal.notes && (
+                        <div className="text-sm mt-2 p-2 bg-gray-50 rounded">
+                          <p className="text-gray-600 italic">{animal.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => openUpdateModal(animal)}
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Update
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="text-red-600 hover:bg-red-50"
+                        onClick={() => handleDeleteLivestock(animal.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* --- Pagination Buttons --- */}
+            <div className="flex justify-center mt-6 space-x-2">
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === i + 1 ? "bg-green-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
+        {/* --- Add Modal --- */}
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Livestock</DialogTitle>
-              <DialogDescription>
-                Enter the details of your new livestock and its current health status
-              </DialogDescription>
+              <DialogTitle>Add Livestock</DialogTitle>
+              <DialogDescription>Fill the form to add a new livestock</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-2">
               <div>
-                <Label htmlFor="name">Livestock Name/ID *</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="e.g., Cow #4"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                />
+                <Label>Name</Label>
+                <Input name="name" value={formData.name} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="type">Type *</Label>
-                <select
-                  id="type"
-                  name="type"
-                  className="w-full px-3 py-2 border rounded-md"
-                  value={formData.type}
-                  onChange={handleInputChange}
-                >
+                <Label>Type</Label>
+                <select name="type" value={formData.type} onChange={handleInputChange} className="border p-2 w-full rounded">
                   <option value="Cattle">Cattle</option>
                   <option value="Goat">Goat</option>
                   <option value="Sheep">Sheep</option>
@@ -337,46 +351,20 @@ export default function LivestockManagement() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="breed">Breed</Label>
-                <Input
-                  id="breed"
-                  name="breed"
-                  placeholder="e.g., Friesian"
-                  value={formData.breed}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="age">Age</Label>
-                  <Input
-                    id="age"
-                    name="age"
-                    placeholder="e.g., 2 years"
-                    value={formData.age}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="weight">Weight</Label>
-                  <Input
-                    id="weight"
-                    name="weight"
-                    placeholder="e.g., 400kg"
-                    value={formData.weight}
-                    onChange={handleInputChange}
-                  />
-                </div>
+                <Label>Breed</Label>
+                <Input name="breed" value={formData.breed} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="healthStatus">Health Status *</Label>
-                <select
-                  id="healthStatus"
-                  name="healthStatus"
-                  className="w-full px-3 py-2 border rounded-md"
-                  value={formData.healthStatus}
-                  onChange={handleInputChange}
-                >
+                <Label>Age</Label>
+                <Input name="age" value={formData.age} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label>Weight</Label>
+                <Input name="weight" value={formData.weight} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label>Health Status</Label>
+                <select name="healthStatus" value={formData.healthStatus} onChange={handleInputChange} className="border p-2 w-full rounded">
                   <option value="healthy">Healthy</option>
                   <option value="sick">Sick</option>
                   <option value="under-treatment">Under Treatment</option>
@@ -384,61 +372,32 @@ export default function LivestockManagement() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  placeholder="Any additional information..."
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  rows={3}
-                />
+                <Label>Notes</Label>
+                <Textarea name="notes" value={formData.notes} onChange={handleInputChange} />
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleAddLivestock} className="flex-1 bg-green-600 hover:bg-green-700">
-                  Add Livestock
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setIsAddModalOpen(false)
-                    resetForm()
-                  }}
-                >
-                  Cancel
-                </Button>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
+                <Button className="bg-green-600 hover:bg-green-700" onClick={handleAddLivestock}>Add</Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
 
+        {/* --- Update Modal --- */}
         <Dialog open={isUpdateModalOpen} onOpenChange={setIsUpdateModalOpen}>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle>Update Livestock Health</DialogTitle>
-              <DialogDescription>
-                Update the health status and details of {selectedLivestock?.name}
-              </DialogDescription>
+              <DialogTitle>Update Livestock</DialogTitle>
+              <DialogDescription>Modify livestock details</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-2">
               <div>
-                <Label htmlFor="update-name">Livestock Name/ID *</Label>
-                <Input
-                  id="update-name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                />
+                <Label>Name</Label>
+                <Input name="name" value={formData.name} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="update-type">Type *</Label>
-                <select
-                  id="update-type"
-                  name="type"
-                  className="w-full px-3 py-2 border rounded-md"
-                  value={formData.type}
-                  onChange={handleInputChange}
-                >
+                <Label>Type</Label>
+                <select name="type" value={formData.type} onChange={handleInputChange} className="border p-2 w-full rounded">
                   <option value="Cattle">Cattle</option>
                   <option value="Goat">Goat</option>
                   <option value="Sheep">Sheep</option>
@@ -447,43 +406,20 @@ export default function LivestockManagement() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="update-breed">Breed</Label>
-                <Input
-                  id="update-breed"
-                  name="breed"
-                  value={formData.breed}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="update-age">Age</Label>
-                  <Input
-                    id="update-age"
-                    name="age"
-                    value={formData.age}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="update-weight">Weight</Label>
-                  <Input
-                    id="update-weight"
-                    name="weight"
-                    value={formData.weight}
-                    onChange={handleInputChange}
-                  />
-                </div>
+                <Label>Breed</Label>
+                <Input name="breed" value={formData.breed} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="update-healthStatus">Health Status *</Label>
-                <select
-                  id="update-healthStatus"
-                  name="healthStatus"
-                  className="w-full px-3 py-2 border rounded-md"
-                  value={formData.healthStatus}
-                  onChange={handleInputChange}
-                >
+                <Label>Age</Label>
+                <Input name="age" value={formData.age} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label>Weight</Label>
+                <Input name="weight" value={formData.weight} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label>Health Status</Label>
+                <select name="healthStatus" value={formData.healthStatus} onChange={handleInputChange} className="border p-2 w-full rounded">
                   <option value="healthy">Healthy</option>
                   <option value="sick">Sick</option>
                   <option value="under-treatment">Under Treatment</option>
@@ -491,32 +427,17 @@ export default function LivestockManagement() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="update-notes">Notes</Label>
-                <Textarea
-                  id="update-notes"
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  rows={3}
-                />
+                <Label>Notes</Label>
+                <Textarea name="notes" value={formData.notes} onChange={handleInputChange} />
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleUpdateLivestock} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  Update Livestock
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setIsUpdateModalOpen(false)
-                    resetForm()
-                  }}
-                >
-                  Cancel
-                </Button>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button onClick={() => setIsUpdateModalOpen(false)}>Cancel</Button>
+                <Button className="bg-green-600 hover:bg-green-700" onClick={handleUpdateLivestock}>Update</Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
+
       </div>
     </div>
   )

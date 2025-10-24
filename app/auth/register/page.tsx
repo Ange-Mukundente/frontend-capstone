@@ -112,6 +112,7 @@ export default function RegisterPage() {
                   id="password"
                   type="password"
                   placeholder="••••••••"
+                  autoComplete="new-password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
