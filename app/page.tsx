@@ -74,12 +74,12 @@ export default function LandingPage() {
                   Book Appointment
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link
+                {/* <Link
                   href="#features"
                   className="px-6 py-3 text-base font-medium border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center justify-center"
                 >
                   Learn More
-                </Link>
+                </Link> */}
               </div>
               <div className="flex items-center gap-8 pt-4">
                 <div>

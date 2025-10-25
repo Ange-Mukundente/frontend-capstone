@@ -121,7 +121,10 @@ export default function BookAppointment() {
               <CardContent className="space-y-6">
                 {/* Select Livestock */}
                 <div>
-                  <Label htmlFor="livestockId">Select Livestock *</Label>
+                 <Label htmlFor="livestockId">
+                    Select Livestock <span className="text-red-600">*</span>
+                 </Label>
+
                   {livestock.length === 0 ? (
                     <div className="mt-2 p-4 border rounded-md bg-yellow-50 text-sm">
                       <p className="text-yellow-800 mb-2">You don't have any livestock yet.</p>
@@ -153,7 +156,9 @@ export default function BookAppointment() {
 
                 {/* Select Veterinarian */}
                 <div>
-                  <Label htmlFor="vetId">Select Veterinarian *</Label>
+                  <Label htmlFor="vetId">
+  Select Veterinarian <span className="text-red-600">*</span>
+</Label>
                   <select
                     id="vetId"
                     name="vetId"
@@ -173,7 +178,9 @@ export default function BookAppointment() {
                 {/* Date and Time */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="date">Date *</Label>
+                    <Label htmlFor="date">
+  Date <span className="text-red-600">*</span>
+</Label>
                     <Input
                       id="date"
                       name="date"
@@ -185,7 +192,9 @@ export default function BookAppointment() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="time">Time *</Label>
+                    <Label htmlFor="time">
+  Time <span className="text-red-600">*</span>
+</Label>
                     <select
                       id="time"
                       name="time"
@@ -203,7 +212,9 @@ export default function BookAppointment() {
 
                 {/* Reason for Visit */}
                 <div>
-                  <Label htmlFor="reason">Reason for Visit *</Label>
+                 <Label htmlFor="reason">
+  Reason for Visit <span className="text-red-600">*</span>
+</Label>
                   <select
                     id="reason"
                     name="reason"
