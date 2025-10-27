@@ -21,17 +21,40 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
+interface Livestock {
+  id: number
+  name: string
+  type: string
+  breed: string
+  age: string
+  farmerName: string
+  lastVisit: string
+  condition: string
+  weight: string
+}
+
+interface MedicalRecord {
+  id: number
+  livestockId: number
+  date: string
+  type: string
+  title: string
+  vetName: string
+  notes: string
+  medications: string[]
+}
+
 export default function VetLivestockRecords() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterCondition, setFilterCondition] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedAnimal, setSelectedAnimal] = useState(null)
+  const [selectedAnimal, setSelectedAnimal] = useState<Livestock | null>(null)
   const [showRecords, setShowRecords] = useState(false)
   const itemsPerPage = 4
 
-  const livestock = [
+  const livestock: Livestock[] = [
     {
       id: 1,
       name: "Cow #1",
@@ -100,7 +123,7 @@ export default function VetLivestockRecords() {
     }
   ]
 
-  const allRecords = [
+  const allRecords: MedicalRecord[] = [
     {
       id: 1,
       livestockId: 1,
@@ -332,11 +355,11 @@ export default function VetLivestockRecords() {
   const endIndex = startIndex + itemsPerPage
   const currentLivestock = filteredLivestock.slice(startIndex, endIndex)
 
-  const getRecordsByAnimalId = (animalId) => {
+  const getRecordsByAnimalId = (animalId: number): MedicalRecord[] => {
     return allRecords.filter(record => record.livestockId === animalId)
   }
 
-  const getConditionBadge = (condition) => {
+  const getConditionBadge = (condition: string) => {
     switch(condition) {
       case "Healthy":
         return <Badge className="bg-green-500 hover:bg-green-600">Healthy</Badge>
@@ -349,7 +372,7 @@ export default function VetLivestockRecords() {
     }
   }
 
-  const getRecordBadge = (type) => {
+  const getRecordBadge = (type: string) => {
     switch(type) {
       case "vaccination":
         return <Badge className="bg-blue-500 hover:bg-blue-600">Vaccination</Badge>
@@ -362,7 +385,7 @@ export default function VetLivestockRecords() {
     }
   }
 
-  const getRecordIcon = (type) => {
+  const getRecordIcon = (type: string) => {
     switch(type) {
       case "vaccination": return <Pill className="w-4 h-4 text-blue-600" />
       case "treatment": return <Activity className="w-4 h-4 text-red-600" />
@@ -376,17 +399,17 @@ export default function VetLivestockRecords() {
     return types.sort()
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
   }
 
-  const handleViewRecords = (animal) => {
+  const handleViewRecords = (animal: Livestock) => {
     setSelectedAnimal(animal)
     setShowRecords(true)
   }
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }

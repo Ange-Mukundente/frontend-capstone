@@ -13,11 +13,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Navbar from "@/components/Navbar"
 
+interface Appointment {
+  id: number
+  farmerName: string
+  livestockName: string
+  livestockType: string
+  date: string
+  time: string
+  reason: string
+  status: string
+  location: string
+  farmerPhone: string
+  vetName?: string
+  vetId?: string | number
+}
+
 export default function VeterinarianDashboard() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [appointments, setAppointments] = useState([])
+  const [appointments, setAppointments] = useState<Appointment[]>([])
 
   // Fetch user data and appointments
   useEffect(() => {
@@ -38,12 +53,12 @@ export default function VeterinarianDashboard() {
         const storedAppointments = localStorage.getItem("appointments")
         if (storedAppointments && storedAppointments !== "undefined") {
           const allAppointments = JSON.parse(storedAppointments)
-          const vetAppointments = allAppointments.filter(apt => 
+          const vetAppointments = allAppointments.filter((apt: Appointment) => 
             apt.vetName === userData.name || apt.vetId === userData.id
           )
           setAppointments(vetAppointments)
         } else {
-          const defaultAppointments = [
+          const defaultAppointments: Appointment[] = [
             { id: 1, farmerName: "Mary", livestockName: "Cow #3", livestockType: "Cattle", date: "2025-10-21", time: "10:00 AM", reason: "Routine Checkup", status: "confirmed", location: "Kigali District", farmerPhone: "+250786160692" },
             { id: 2, farmerName: "John Doe", livestockName: "Goat #2", livestockType: "Goat", date: "2025-10-21", time: "2:00 PM", reason: "Vaccination", status: "pending", location: "Gasabo District", farmerPhone: "+250788123456" },
             { id: 3, farmerName: "Jane Smith", livestockName: "Cow #5", livestockType: "Cattle", date: "2025-10-22", time: "9:00 AM", reason: "Illness", status: "confirmed", location: "Kicukiro District", farmerPhone: "+250788234567" }
@@ -95,7 +110,7 @@ export default function VeterinarianDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar user={user} />
+      <Navbar/>
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}

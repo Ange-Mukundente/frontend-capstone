@@ -2,22 +2,29 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Calendar, Clock, Plus, Save } from "lucide-react"
+import { ArrowLeft, Clock, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+
+interface DaySchedule {
+  start: string
+  end: string
+  available: boolean
+}
+
+type Schedule = Record<string, DaySchedule>
 
 export default function VetSchedule() {
   const router = useRouter()
-  const [schedule, setSchedule] = useState({
+  const [schedule, setSchedule] = useState<Schedule>({
     monday: { start: "08:00", end: "17:00", available: true },
     tuesday: { start: "08:00", end: "17:00", available: true },
     wednesday: { start: "08:00", end: "17:00", available: true },
     thursday: { start: "08:00", end: "17:00", available: true },
     friday: { start: "08:00", end: "17:00", available: true },
     saturday: { start: "09:00", end: "13:00", available: true },
-    sunday: { start: "", end: "", available: false }
+    sunday: { start: "", end: "", available: false },
   })
 
   const handleSave = () => {
@@ -25,17 +32,17 @@ export default function VetSchedule() {
     alert("Schedule saved successfully!")
   }
 
-  const handleToggleDay = (day) => {
-    setSchedule(prev => ({
+  const handleToggleDay = (day: string) => {
+    setSchedule((prev) => ({
       ...prev,
-      [day]: { ...prev[day], available: !prev[day].available }
+      [day]: { ...prev[day], available: !prev[day].available },
     }))
   }
 
-  const handleTimeChange = (day, field, value) => {
-    setSchedule(prev => ({
+  const handleTimeChange = (day: string, field: "start" | "end", value: string) => {
+    setSchedule((prev) => ({
       ...prev,
-      [day]: { ...prev[day], [field]: value }
+      [day]: { ...prev[day], [field]: value },
     }))
   }
 
@@ -46,7 +53,7 @@ export default function VetSchedule() {
     { key: "thursday", label: "Thursday" },
     { key: "friday", label: "Friday" },
     { key: "saturday", label: "Saturday" },
-    { key: "sunday", label: "Sunday" }
+    { key: "sunday", label: "Sunday" },
   ]
 
   return (
@@ -83,7 +90,7 @@ export default function VetSchedule() {
                       />
                       <label className="font-medium">{day.label}</label>
                     </div>
-                    
+
                     {schedule[day.key].available ? (
                       <div className="flex items-center gap-4 flex-1">
                         <div className="flex items-center gap-2">
@@ -109,10 +116,7 @@ export default function VetSchedule() {
                   </div>
                 ))}
 
-                <Button 
-                  className="w-full bg-blue-600 hover:bg-blue-700 mt-6"
-                  onClick={handleSave}
-                >
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 mt-6" onClick={handleSave}>
                   <Save className="w-4 h-4 mr-2" />
                   Save Schedule
                 </Button>
@@ -130,7 +134,7 @@ export default function VetSchedule() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Available Days:</span>
                   <span className="font-medium">
-                    {Object.values(schedule).filter(s => s.available).length} / 7
+                    {Object.values(schedule).filter((s) => s.available).length} / 7
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -138,10 +142,11 @@ export default function VetSchedule() {
                   <span className="font-medium">
                     {Object.values(schedule).reduce((total, day) => {
                       if (!day.available || !day.start || !day.end) return total
-                      const start = parseInt(day.start.split(':')[0])
-                      const end = parseInt(day.end.split(':')[0])
+                      const start = parseInt(day.start.split(":")[0])
+                      const end = parseInt(day.end.split(":")[0])
                       return total + (end - start)
-                    }, 0)} hours
+                    }, 0)}{" "}
+                    hours
                   </span>
                 </div>
               </CardContent>

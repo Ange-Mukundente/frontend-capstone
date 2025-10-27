@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 
 export default function VetMessages() {
   const router = useRouter()
-  const [selectedConversation, setSelectedConversation] = useState(null)
+  const [selectedConversation, setSelectedConversation] = useState<number | null>(null)
   const [messageText, setMessageText] = useState("")
 
   const conversations = [
