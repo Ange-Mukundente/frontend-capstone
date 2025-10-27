@@ -15,6 +15,8 @@ export default function FarmerDashboard() {
   const [loading, setLoading] = useState(true)
   const [livestock, setLivestock] = useState<any[]>([])
 
+  
+
   // Fetch user & livestock data
   useEffect(() => {
     try {

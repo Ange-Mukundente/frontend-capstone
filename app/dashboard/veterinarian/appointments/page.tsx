@@ -507,9 +507,38 @@ export default function VeterinarianAppointments() {
                           <FileText className="w-4 h-4 mr-1" />
                           Details
                         </Button>
+                        <Button 
+                          size="sm" 
+                          className="w-full bg-green-600 hover:bg-green-700 mt-2" 
+                          onClick={() => router.push(`/dashboard/veterinarian/appointments/report?appointmentId=${appointment.id}`)}
+                        >
+                          <FileText className="w-4 h-4 mr-1" />
+                          Write Report
+                        </Button>
                       </>
                     )}
-                    {(appointment.status === "completed" || appointment.status === "cancelled") && (
+                    {appointment.status === "completed" && (
+                      <>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1" 
+                          onClick={() => handleViewDetails(appointment)}
+                        >
+                          <FileText className="w-4 h-4 mr-1" />
+                          View Details
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          className="flex-1 bg-green-600 hover:bg-green-700" 
+                          onClick={() => router.push(`/dashboard/veterinarian/appointments/report?appointmentId=${appointment.id}`)}
+                        >
+                          <FileText className="w-4 h-4 mr-1" />
+                          View/Edit Report
+                        </Button>
+                      </>
+                    )}
+                    {appointment.status === "cancelled" && (
                       <Button 
                         size="sm" 
                         variant="outline" 

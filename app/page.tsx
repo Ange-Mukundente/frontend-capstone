@@ -19,12 +19,6 @@ export default function LandingPage() {
               <Link href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Home
               </Link>
-              <Link href="#features" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Features
-              </Link>
-              <Link href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                How It Works
-              </Link>
               <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 About
               </Link>
@@ -175,10 +169,10 @@ export default function LandingPage() {
                     {feature.title}
                   </h3>
                   <p className="text-gray-600 leading-relaxed text-sm mb-4">{feature.description}</p>
-                  <div className="flex items-center text-green-600 text-sm font-medium group-hover:gap-2 transition-all">
+                  {/* <div className="flex items-center text-green-600 text-sm font-medium group-hover:gap-2 transition-all">
                     Learn more
                     <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
+                  </div> */}
                 </Link>
               )
             })}
@@ -310,104 +304,12 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-12 bg-gray-50">
-        <div className="container mx-auto px-4 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600">
-                  <Heart className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-bold">VetConnect Rwanda</span>
-              </div>
-              <p className="text-sm text-gray-600">
-                Smart veterinary appointment booking for Rwanda&apos;s livestock sector
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <Link href="/" className="hover:text-gray-900">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#how-it-works" className="hover:text-gray-900">
-                    How It Works
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/pricing" className="hover:text-gray-900">
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/sms-access" className="hover:text-gray-900">
-                    SMS Access
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <Link href="/documentation" className="hover:text-gray-900">
-                    Documentation
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/user-guide" className="hover:text-gray-900">
-                    User Guide
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/faqs" className="hover:text-gray-900">
-                    FAQs
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/support" className="hover:text-gray-900">
-                    Support
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">About</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <Link href="/our-mission" className="hover:text-gray-900">
-                    Our Mission
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/research" className="hover:text-gray-900">
-                    Research
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/partners" className="hover:text-gray-900">
-                    Partners
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-gray-900">
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t mt-12 pt-8 text-center text-sm text-gray-600">
+      <div className="border-t mt-12 pt-8 text-center text-sm text-gray-600">
             <p>
               &copy; 2025 VetConnect Rwanda. Supporting Rwanda&apos;s Vision 2050 through digital livestock health
               management.
             </p>
           </div>
-        </div>
-      </footer>
     </div>
   )
 }

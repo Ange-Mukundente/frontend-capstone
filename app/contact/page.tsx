@@ -43,7 +43,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+        {/* Header */}
       <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -54,17 +54,22 @@ export default function ContactPage() {
               <span className="text-xl font-bold">VetConnect Rwanda</span>
             </Link>
             <nav className="hidden md:flex items-center gap-6">
-              <Link href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">Home</Link>
-              <Link href="/#features" className="text-sm font-medium text-gray-600 hover:text-gray-900">Features</Link>
-              <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900">About</Link>
-              <Link href="/contact" className="text-sm font-medium text-green-600">Contact</Link>
+              <Link href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Home
+              </Link>
+              <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                About
+              </Link>
+              <Link href="/contact" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Contact
+              </Link>
             </nav>
             <div className="flex items-center gap-3">
-              <Link href="/login" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
+              <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
                 Sign In
               </Link>
               <Link
-                href="/register"
+                href="/auth/register"
                 className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700"
               >
                 Get Started
@@ -73,6 +78,7 @@ export default function ContactPage() {
           </div>
         </div>
       </header>
+
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-green-600 to-green-700 text-white py-16">

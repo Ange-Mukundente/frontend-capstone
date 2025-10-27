@@ -4,7 +4,7 @@ import { Heart, Target, Users, Award, TrendingUp, Shield } from "lucide-react"
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
+       {/* Header */}
       <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -18,10 +18,7 @@ export default function AboutPage() {
               <Link href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Home
               </Link>
-              <Link href="/#features" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Features
-              </Link>
-              <Link href="/about" className="text-sm font-medium text-green-600">
+              <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 About
               </Link>
               <Link href="/contact" className="text-sm font-medium text-gray-600 hover:text-gray-900">
@@ -29,11 +26,11 @@ export default function AboutPage() {
               </Link>
             </nav>
             <div className="flex items-center gap-3">
-              <Link href="/login" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
+              <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
                 Sign In
               </Link>
               <Link
-                href="/register"
+                href="/auth/register"
                 className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700"
               >
                 Get Started
@@ -42,7 +39,6 @@ export default function AboutPage() {
           </div>
         </div>
       </header>
-
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-green-600 to-green-700 text-white py-20 text-center">
         <div className="container mx-auto px-4 lg:px-8">
