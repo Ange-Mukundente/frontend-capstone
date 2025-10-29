@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Heart, Calendar, Bell, Plus, Beef, Activity, AlertTriangle, Phone, Menu, LogOut, User } from "lucide-react"
+import { Heart, Calendar, Bell, Plus, Beef, Activity, AlertTriangle, Phone, Menu, LogOut, User, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import NavigationBar from "@/components/NavigationBar"
 
 export default function FarmerDashboard() {
   const router = useRouter()
@@ -14,6 +15,7 @@ export default function FarmerDashboard() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [livestock, setLivestock] = useState<any[]>([])
+  const [reportsCount, setReportsCount] = useState(0)
 
   
 
@@ -49,6 +51,14 @@ export default function FarmerDashboard() {
         ]
         setLivestock(defaultLivestock)
         localStorage.setItem("livestock", JSON.stringify(defaultLivestock))
+      }
+
+      // Load reports count
+      const storedReports = localStorage.getItem("vetReports")
+      if (storedReports && storedReports !== "undefined") {
+        const allReports = JSON.parse(storedReports)
+        const myReports = allReports.filter((r: any) => r.farmerName === userData.name)
+        setReportsCount(myReports.length)
       }
 
       setLoading(false)
@@ -213,8 +223,7 @@ export default function FarmerDashboard() {
                 </p>
               </CardContent>
             </Card>
-</div>
-
+        </div>
 
         {/* Main & Sidebar */}
         <div className="grid lg:grid-cols-3 gap-6">
@@ -233,8 +242,14 @@ export default function FarmerDashboard() {
                   <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/livestock')}>
                     <Plus className="mr-2 h-4 w-4" /> Add Livestock
                   </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/reports')}>
+                    <FileText className="mr-2 h-4 w-4" /> Veterinary Reports
+                    {reportsCount > 0 && (
+                      <Badge className="ml-auto bg-blue-500">{reportsCount}</Badge>
+                    )}
+                  </Button>
                   <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/health-records')}>
-                    <Activity className="mr-2 h-4 w-4" /> View Health Records
+                    <Activity className="mr-2 h-4 w-4" /> Health Records
                   </Button>
                   <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/contact-vet')}>
                     <Phone className="mr-2 h-4 w-4" /> Contact Vet

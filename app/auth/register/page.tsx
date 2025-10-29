@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Heart } from "lucide-react"
+import { Heart, User, Stethoscope, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,13 +22,23 @@ export default function RegisterPage() {
     email: "",
     password: "",
     phone: "",
-    role: "farmer" as "farmer" | "veterinarian",
+    role: "farmer" as "farmer" | "veterinarian" | "admin",
     district: "",
     sector: "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // For admin, show message
+    if (formData.role === "admin") {
+      toast({
+        title: "Admin Registration",
+        description: "Please contact system administrator for admin account creation at admin@vetconnect.rw",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
       const response = await register({
@@ -44,7 +54,7 @@ export default function RegisterPage() {
       if (response.success && response.data) {
         toast({
           title: "Registration successful",
-          description: `Welcome, ${response.data.user.name}!`,
+          description: `Welcome, ${response.data.user.name}! Please sign in.`,
         })
         router.push("/auth/login")
       } else {
@@ -64,48 +74,124 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-600">
-              <Heart className="h-6 w-6 text-white" />
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2 mb-4">
+            <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+              <Heart className="w-7 h-7 text-white" fill="white" />
             </div>
-            <span className="text-xl font-bold">VetConnect Rwanda</span>
+            <span className="text-2xl font-bold text-gray-900">VetConnect Rwanda</span>
           </Link>
+          <p className="text-gray-600 mt-2">Smart veterinary care for your livestock</p>
         </div>
 
-        <Card>
+        <Card className="shadow-xl border-gray-200">
           <CardHeader>
-            <CardTitle>Sign Up</CardTitle>
-            <CardDescription>Create your account</CardDescription>
+            <CardTitle className="text-2xl">Create Account</CardTitle>
+            <CardDescription>Fill in your details to get started</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              {/* Role Selection */}
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="role">I am a</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: "farmer" })}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      formData.role === "farmer"
+                        ? "border-green-500 bg-green-50"
+                        : "border-gray-200 hover:border-green-300"
+                    }`}
+                  >
+                    <User className={`w-6 h-6 mx-auto mb-2 ${
+                      formData.role === "farmer" ? "text-green-600" : "text-gray-400"
+                    }`} />
+                    <span className={`text-xs font-medium ${
+                      formData.role === "farmer" ? "text-green-600" : "text-gray-600"
+                    }`}>
+                      Farmer
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: "veterinarian" })}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      formData.role === "veterinarian"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-blue-300"
+                    }`}
+                  >
+                    <Stethoscope className={`w-6 h-6 mx-auto mb-2 ${
+                      formData.role === "veterinarian" ? "text-blue-600" : "text-gray-400"
+                    }`} />
+                    <span className={`text-xs font-medium ${
+                      formData.role === "veterinarian" ? "text-blue-600" : "text-gray-600"
+                    }`}>
+                      Vet
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: "admin" })}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      formData.role === "admin"
+                        ? "border-purple-500 bg-purple-50"
+                        : "border-gray-200 hover:border-purple-300"
+                    }`}
+                  >
+                    <ShieldCheck className={`w-6 h-6 mx-auto mb-2 ${
+                      formData.role === "admin" ? "text-purple-600" : "text-gray-400"
+                    }`} />
+                    <span className={`text-xs font-medium ${
+                      formData.role === "admin" ? "text-purple-600" : "text-gray-600"
+                    }`}>
+                      Admin
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Admin Notice */}
+              {formData.role === "admin" && (
+                <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                  <p className="text-xs text-purple-900">
+                    <strong>Note:</strong> Admin accounts require authorization. Contact admin@vetconnect.rw
+                  </p>
+                </div>
+              )}
+
+              {/* Name */}
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Enter your name"
+                  placeholder="Enter your full name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                 />
               </div>
 
+              {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="your@email.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
                 />
               </div>
 
+              {/* Password */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -119,50 +205,39 @@ export default function RegisterPage() {
                 />
               </div>
 
+              {/* Phone */}
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
-                  type="text"
-                  placeholder="Enter your phone"
+                  type="tel"
+                  placeholder="+250 788 123 456"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   required
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <select
-                  id="role"
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as "farmer" | "veterinarian" })}
-                  required
-                  className="w-full border rounded px-3 py-2"
-                >
-                  <option value="farmer">Farmer</option>
-                  <option value="veterinarian">Veterinarian</option>
-                </select>
-              </div>
-
+              {/* District */}
               <div className="space-y-2">
                 <Label htmlFor="district">District</Label>
                 <Input
                   id="district"
                   type="text"
-                  placeholder="Enter your district"
+                  placeholder="e.g., Kigali"
                   value={formData.district}
                   onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                   required
                 />
               </div>
 
+              {/* Sector */}
               <div className="space-y-2">
                 <Label htmlFor="sector">Sector</Label>
                 <Input
                   id="sector"
                   type="text"
-                  placeholder="Enter your sector"
+                  placeholder="e.g., Gasabo"
                   value={formData.sector}
                   onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
                   required
@@ -171,18 +246,37 @@ export default function RegisterPage() {
             </CardContent>
 
             <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
-                {loading ? "Registering..." : "Sign Up"}
+              <Button 
+                type="submit" 
+                className={`w-full ${
+                  formData.role === "admin" ? "bg-purple-600 hover:bg-purple-700" :
+                  formData.role === "veterinarian" ? "bg-blue-600 hover:bg-blue-700" :
+                  "bg-green-600 hover:bg-green-700"
+                }`}
+                disabled={loading}
+              >
+                {loading ? "Creating Account..." : "Create Account"}
               </Button>
               <p className="text-sm text-center text-gray-600">
                 Already have an account?{" "}
-                <Link href="/auth/login" className="text-green-600 hover:underline font-medium">
+                <Link href="/auth/login" className={`${
+                  formData.role === "admin" ? "text-purple-600" :
+                  formData.role === "veterinarian" ? "text-blue-600" :
+                  "text-green-600"
+                } hover:underline font-medium`}>
                   Sign in
                 </Link>
               </p>
             </CardFooter>
           </form>
         </Card>
+
+        {/* Back to Home */}
+        <div className="text-center mt-6">
+          <Link href="/" className="text-sm text-gray-600 hover:text-green-600">
+            ← Back to Home
+          </Link>
+        </div>
       </div>
     </div>
   )

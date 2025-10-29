@@ -59,19 +59,98 @@ export default function FarmerViewReports() {
 
   const loadReports = () => {
     try {
+      const userStr = localStorage.getItem("user")
+      const currentUser = userStr && userStr !== "undefined" ? JSON.parse(userStr) : { name: "Farmer" }
+      
       const storedReports = localStorage.getItem("vetReports")
+      let allReports: Report[] = []
+      
       if (storedReports && storedReports !== "undefined") {
-        const allReports: Report[] = JSON.parse(storedReports)
+        allReports = JSON.parse(storedReports)
+      }
+      
+      // If no reports exist OR farmer has no reports, create 3 sample reports
+      const existingFarmerReports = allReports.filter(report => report.farmerName === currentUser.name)
+      
+      if (existingFarmerReports.length === 0) {
+        const sampleReports = [
+          {
+            id: Date.now() + 1,
+            appointmentId: 1,
+            farmerName: currentUser.name,
+            livestockName: "Cow #1",
+            livestockType: "Cattle",
+            visitDate: "2025-10-20",
+            reportDate: "2025-10-20T14:30:00",
+            vetName: "Dr. Claudine Umutoni",
+            diagnosis: "Pregnancy confirmed - approximately 5 months gestation",
+            symptoms: "Normal appetite, good body condition",
+            treatment: "Prenatal vitamin supplementation started",
+            medications: "Vitamin A & D supplement - 10ml\nCalcium supplement - 15ml",
+            prescriptionDosage: "Administer vitamins weekly until calving. Calcium supplement twice weekly.",
+            followUpDate: "2025-11-15",
+            followUpRequired: true,
+            pregnancyStatus: "Pregnant - 5 months",
+            generalCondition: "Excellent",
+            weight: "455kg",
+            temperature: "38.5°C",
+            additionalNotes: "Expected calving date: Late February 2026. Monitor closely as calving approaches.",
+            recommendations: "Provide high-quality feed. Ensure access to clean water. Reduce stress. Schedule calving assistance if needed."
+          },
+          {
+            id: Date.now() + 2,
+            appointmentId: 2,
+            farmerName: currentUser.name,
+            livestockName: "Goat #1",
+            livestockType: "Goat",
+            visitDate: "2025-10-15",
+            reportDate: "2025-10-15T10:15:00",
+            vetName: "Dr. Grace Mukamana",
+            diagnosis: "Mild parasitic infection (internal parasites)",
+            symptoms: "Reduced appetite, slight weight loss, rough coat",
+            treatment: "Deworming treatment administered",
+            medications: "Albendazole - 5ml oral\nVitamin B complex - 2ml injection",
+            prescriptionDosage: "Single dose administered. Repeat in 14 days if symptoms persist.",
+            followUpDate: "2025-10-29",
+            followUpRequired: true,
+            pregnancyStatus: "",
+            generalCondition: "Fair",
+            weight: "42kg",
+            temperature: "39.0°C",
+            additionalNotes: "Weight should improve within 2 weeks. Monitor stool consistency.",
+            recommendations: "Rotate pasture to prevent reinfection. Provide mineral supplements. Keep housing clean and dry. Monitor weight gain over next 2 weeks."
+          },
+          {
+            id: Date.now() + 3,
+            appointmentId: 3,
+            farmerName: currentUser.name,
+            livestockName: "Cow #2",
+            livestockType: "Cattle",
+            visitDate: "2025-10-10",
+            reportDate: "2025-10-10T09:00:00",
+            vetName: "Dr. Emmanuel Nkusi",
+            diagnosis: "Mastitis in left rear quarter (bacterial infection)",
+            symptoms: "Swollen udder, reduced milk production, elevated temperature, pain on palpation",
+            treatment: "Antibiotic treatment initiated, anti-inflammatory administered",
+            medications: "Penicillin G - intramammary infusion\nFlunixin meglumine - 10ml IV\nOxytocin - 2ml to aid milk let-down",
+            prescriptionDosage: "Intramammary infusion twice daily for 3 days. Anti-inflammatory once daily for 3 days. Discard milk for 5 days.",
+            followUpDate: "2025-10-13",
+            followUpRequired: true,
+            pregnancyStatus: "",
+            generalCondition: "Fair",
+            weight: "420kg",
+            temperature: "39.8°C",
+            additionalNotes: "Milk from treated quarter must be discarded for 5 days. Isolate from other lactating animals.",
+            recommendations: "Strip affected quarter 3-4 times daily. Apply warm compresses. Improve milking hygiene. Check for improvement in 48 hours. DO NOT sell or consume milk for 5 days after last treatment."
+          }
+        ]
         
-        // Filter reports for current farmer
-        const userStr = localStorage.getItem("user")
-        if (userStr && userStr !== "undefined") {
-          const currentUser = JSON.parse(userStr)
-          const farmerReports = allReports.filter(report => 
-            report.farmerName === currentUser.name
-          )
-          setReports(farmerReports)
-        }
+        // Add sample reports to existing reports
+        allReports = [...allReports, ...sampleReports]
+        localStorage.setItem("vetReports", JSON.stringify(allReports))
+        setReports(sampleReports)
+      } else {
+        setReports(existingFarmerReports)
       }
     } catch (error) {
       console.error("Error loading reports:", error)
