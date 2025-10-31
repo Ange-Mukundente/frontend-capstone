@@ -13,7 +13,7 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
-  variant?: "default" | "destructive" // Added variant to ToasterToast type to support destructive toasts
+  variant?: "default" | "destructive"
 }
 
 const actionTypes = {
@@ -89,8 +89,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -138,32 +136,15 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
+// DISABLED: This function now does nothing
 function toast({ ...props }: Toast) {
   const id = genId()
 
-  const update = (props: ToasterToast) =>
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast: { ...props, id },
-    })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
-
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
-    },
-  })
-
+  // Return dummy functions so existing code doesn't break
   return {
     id: id,
-    dismiss,
-    update,
+    dismiss: () => {},
+    update: () => {},
   }
 }
 
@@ -182,8 +163,8 @@ function useToast() {
 
   return {
     ...state,
-    toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    toast, // This now does nothing
+    dismiss: (toastId?: string) => {}, // Does nothing
   }
 }
 

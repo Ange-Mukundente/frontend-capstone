@@ -115,21 +115,18 @@ export default function AdminSendAlerts() {
       return
     }
 
-    // Simulate sending SMS and Email
+    // Create alert for history - FIXED: Store count instead of objects
     const alert = {
       id: Date.now(),
-      ...alertData,
-      recipients: selectedFarmers.map(id => {
-        const farmer = farmers.find(f => f.id === id)
-        return {
-          farmerId: id,
-          farmerName: farmer?.name,
-          email: farmer?.email,
-          phone: farmer?.phone
-        }
-      }),
-      sentAt: new Date().toISOString(),
-      status: "sent"
+      title: alertData.title,
+      message: alertData.message,
+      priority: alertData.priority,
+      type: alertData.type,
+      sendVia: alertData.sendVia,
+      recipients: selectedFarmers.length, // FIXED: Just store the count
+      date: new Date().toISOString().split('T')[0],
+      status: "sent",
+      category: alertData.type.charAt(0).toUpperCase() + alertData.type.slice(1)
     }
 
     // Save to localStorage (alerts history)

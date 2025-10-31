@@ -433,8 +433,8 @@ export default function VetLivestockRecords() {
                 <Stethoscope className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Livestock Records</h1>
-                <p className="text-gray-600">Manage and track all livestock under your care</p>
+                <h1 className="text-3xl font-bold text-gray-900">Animal Patients Records</h1>
+                <p className="text-gray-600">Manage and track all animal patients under your care</p>
               </div>
             </div>
           </div>
@@ -537,7 +537,7 @@ export default function VetLivestockRecords() {
         <div className="mb-4 text-sm text-gray-600 flex items-center justify-between">
           <span>
             Showing <span className="font-semibold text-gray-900">{startIndex + 1}-{Math.min(endIndex, filteredLivestock.length)}</span> of{" "}
-            <span className="font-semibold text-gray-900">{filteredLivestock.length}</span> animals
+            <span className="font-semibold text-gray-900">{filteredLivestock.length}</span> animal patients
           </span>
           {totalPages > 1 && (
             <span className="text-gray-600">
@@ -555,9 +555,9 @@ export default function VetLivestockRecords() {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                   <FileText className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">No animals found</h3>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">No animal patients found</h3>
                 <p className="text-gray-600 max-w-md mx-auto">
-                  Try adjusting your search criteria or filters to find livestock records
+                  Try adjusting your search criteria or filters to find animal patient records
                 </p>
               </CardContent>
             </Card>

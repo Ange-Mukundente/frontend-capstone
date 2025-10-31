@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { 
   Heart, Calendar, Bell, Users, Activity, Clock, Phone, Menu, 
   LogOut, User, CheckCircle, AlertTriangle, TrendingUp, Stethoscope,
-  FileText, MessageSquare
+  FileText, MessageSquare, HelpCircle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -110,7 +110,7 @@ export default function VeterinarianDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar/>
+      {/* <Navbar/> */}
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
@@ -129,16 +129,17 @@ export default function VeterinarianDashboard() {
             <CardDescription>Common tasks for your practice</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-5 gap-3">
               {[
                 { label: "Appointments", icon: <Calendar className="w-5 h-5" />, route: "/dashboard/veterinarian/appointments", color: "bg-blue-600 text-white" },
-                { label: "Patients", icon: <Users className="w-5 h-5" />, route: "/dashboard/veterinarian/patients", color: "bg-green-600 text-white" },
+                { label: "Animal Patients", icon: <Users className="w-5 h-5" />, route: "/dashboard/veterinarian/patients", color: "bg-green-600 text-white" },
                 { label: "Schedule", icon: <Clock className="w-5 h-5" />, route: "/dashboard/veterinarian/schedule", color: "bg-purple-600 text-white" },
-                { label: "Messages", icon: <MessageSquare className="w-5 h-5" />, route: "/dashboard/veterinarian/messages", color: "bg-yellow-500 text-white" }
+                { label: "Messages", icon: <MessageSquare className="w-5 h-5" />, route: "/dashboard/veterinarian/messages", color: "bg-yellow-500 text-white" },
+                { label: "Help", icon: <HelpCircle className="w-5 h-5" />, route: "/dashboard/veterinarian/help", color: "bg-orange-600 text-white" }
               ].map((action, idx) => (
                 <Button
                   key={idx}
-                  className={`flex flex-col items-center justify-center w-24 h-24 rounded-lg shadow hover:shadow-lg transition-all ${action.color}`}
+                  className={`flex flex-col items-center justify-center h-24 rounded-lg shadow hover:shadow-lg transition-all ${action.color}`}
                   onClick={() => router.push(action.route)}
                 >
                   {action.icon}
@@ -200,7 +201,7 @@ export default function VeterinarianDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Cases</CardTitle>
-                <CardDescription>Recently treated patients</CardDescription>
+                <CardDescription>Recently treated animal Animal Animal Patients</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -214,14 +215,14 @@ export default function VeterinarianDashboard() {
                         <p className="text-xs text-gray-600">Owner: {case_item.farmerName}</p>
                         <p className="text-xs text-gray-500">{case_item.diagnosis} • {case_item.date}</p>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard/veterinarian/patients')}>
+                      <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard/veterinarian/animal Animal Animal Patients')}>
                         <FileText className="w-4 h-4" />
                       </Button>
                     </div>
                   ))}
                 </div>
                 <Button variant="link" className="w-full mt-4 text-blue-600" onClick={() => router.push('/dashboard/veterinarian/patients')}>
-                  View All Patient Records
+                  View All animal Animal Patient Records
                 </Button>
               </CardContent>
             </Card>
@@ -261,7 +262,7 @@ export default function VeterinarianDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2"><Users className="w-4 h-4 text-gray-600" /><span className="text-sm text-gray-600">Patients Treated</span></div>
+                  <div className="flex items-center gap-2"><Users className="w-4 h-4 text-gray-600" /><span className="text-sm text-gray-600">animal Animal Animal Patients Treated</span></div>
                   <span className="font-bold text-lg">24</span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -299,10 +300,6 @@ export default function VeterinarianDashboard() {
                 <CardTitle>Need Help?</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {/* <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/veterinarian/resources')}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Medical Resources
-                </Button> */}
                 <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/veterinarian/help')}>
                   <Bell className="mr-2 h-4 w-4" />
                   User Guide

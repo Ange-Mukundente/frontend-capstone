@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
+import LayoutWrapper from "@/components/LayoutWrapper"
 import 'leaflet/dist/leaflet.css'
 
 const inter = Inter({
@@ -24,8 +25,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.alert = function() {};
+            window.confirm = function() { return true; };
+          `
+        }} />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
         <Toaster />
       </body>
     </html>

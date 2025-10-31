@@ -1,23 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Heart, Calendar, Bell, Plus, Beef, Activity, AlertTriangle, Phone, Menu, LogOut, User, FileText } from "lucide-react"
+import NavigationBar from "@/components/NavigationBar"
+import { Calendar, Plus, Beef, Activity, AlertTriangle, Phone, FileText, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import NavigationBar from "@/components/NavigationBar"
 
 export default function FarmerDashboard() {
   const router = useRouter()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [livestock, setLivestock] = useState<any[]>([])
   const [reportsCount, setReportsCount] = useState(0)
-
-  
 
   // Fetch user & livestock data
   useEffect(() => {
@@ -67,11 +63,6 @@ export default function FarmerDashboard() {
       router.push("/auth/signin")
     }
   }, [router])
-
-  const handleLogout = () => {
-    localStorage.removeItem("user")
-    router.push("/auth/signin")
-  }
 
   if (loading) {
     return (
@@ -129,39 +120,8 @@ export default function FarmerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-                <Menu className="h-5 w-5" />
-              </Button>
-              <Link href="/" className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600">
-                  <Heart className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-bold">VetConnect Rwanda</span>
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5" />
-                {pendingAlerts > 0 && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>}
-              </Button>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
-                </Button>
-                <span className="text-sm font-medium hidden md:inline">{user.name}</span>
-              </div>
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
-                <LogOut className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* ✅ Navigation Bar */}
+      {/* <NavigationBar /> */}
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}

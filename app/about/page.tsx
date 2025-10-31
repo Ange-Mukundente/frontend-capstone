@@ -5,7 +5,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
        {/* Header */}
-      <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
+      {/* <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
@@ -38,7 +38,7 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-      </header>
+      </header> */}
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-green-600 to-green-700 text-white py-20 text-center">
         <div className="container mx-auto px-4 lg:px-8">

@@ -29,9 +29,9 @@ export default function AnalyticsReports() {
   ]
 
   const topVets = [
-    { name: "Dr. Paul Nkusi", patients: 32, rating: 4.9 },
-    { name: "Dr. Sarah Mukamana", patients: 24, rating: 4.8 },
-    { name: "Dr. Grace Uwera", patients: 18, rating: 4.7 },
+    { name: "Dr. Paul Nkusi", animalPatients: 32, rating: 4.9 },
+    { name: "Dr. Sarah Mukamana", animalPatients: 24, rating: 4.8 },
+    { name: "Dr. Grace Uwera", animalPatients: 18, rating: 4.7 },
   ]
 
   return (
@@ -203,7 +203,7 @@ export default function AnalyticsReports() {
                       </div>
                       <div>
                         <p className="font-medium text-sm">{vet.name}</p>
-                        <p className="text-xs text-gray-600">{vet.patients} patients</p>
+                        <p className="text-xs text-gray-600">{vet.animalPatients} Animal Patients</p>
                       </div>
                     </div>
                     <div className="text-right">

@@ -77,9 +77,9 @@ export default function VetHelp() {
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Patient Records</h4>
+                  <h4 className="font-semibold mb-2">animal Animal Patient Records</h4>
                   <p className="text-sm text-gray-600">
-                    Access complete medical histories, add treatment notes, and track patient progress over time.
+                    Access complete medical histories, add treatment notes, and track animal Animal Patient progress over time.
                   </p>
                 </div>
                 <div>
@@ -93,7 +93,7 @@ export default function VetHelp() {
           </div>
 
           <div className="space-y-6">
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Technical Support</CardTitle>
               </CardHeader>
@@ -107,7 +107,7 @@ export default function VetHelp() {
                   Email Support
                 </Button>
               </CardContent>
-            </Card>
+            </Card> */}
 
             <Card className="border-red-200 bg-red-50">
               <CardHeader>

@@ -22,7 +22,7 @@ interface Veterinarian {
   district: string
   sector: string
   specialization: string
-  patients: number
+  animalPatients: number
   joinedDate: string
   status: "active" | "inactive"
   rating: number
@@ -45,7 +45,7 @@ export default function ManageVeterinarians() {
       district: "Kigali",
       sector: "Gasabo",
       specialization: "Large Animals",
-      patients: 24,
+      animalPatients: 24,
       joinedDate: "2023-06-15",
       status: "active",
       rating: 4.8
@@ -58,7 +58,7 @@ export default function ManageVeterinarians() {
       district: "Nyagatare",
       sector: "Karama",
       specialization: "Cattle Specialist",
-      patients: 32,
+      animalPatients: 32,
       joinedDate: "2023-07-20",
       status: "active",
       rating: 4.9
@@ -71,7 +71,7 @@ export default function ManageVeterinarians() {
       district: "Gatsibo",
       sector: "Kiramuruzi",
       specialization: "General Practice",
-      patients: 18,
+      animalPatients: 18,
       joinedDate: "2023-08-10",
       status: "active",
       rating: 4.7
@@ -84,7 +84,7 @@ export default function ManageVeterinarians() {
       district: "Kigali",
       sector: "Kicukiro",
       specialization: "Small Animals",
-      patients: 15,
+      animalPatients: 15,
       joinedDate: "2023-09-05",
       status: "active",
       rating: 4.6
@@ -97,7 +97,7 @@ export default function ManageVeterinarians() {
       district: "Nyagatare",
       sector: "Rukomo",
       specialization: "Poultry Specialist",
-      patients: 12,
+      animalPatients: 12,
       joinedDate: "2023-10-12",
       status: "inactive",
       rating: 4.5
@@ -174,8 +174,8 @@ export default function ManageVeterinarians() {
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
             <CardContent className="p-6">
-              <p className="text-sm text-gray-600 mb-1">Total Patients</p>
-              <p className="text-3xl font-bold text-purple-600">{vets.reduce((sum, v) => sum + v.patients, 0)}</p>
+              <p className="text-sm text-gray-600 mb-1">Total Animal Patients</p>
+              <p className="text-3xl font-bold text-purple-600">{vets.reduce((sum, v) => sum + v.animalPatients, 0)}</p>
             </CardContent>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
@@ -254,7 +254,7 @@ export default function ManageVeterinarians() {
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Contact</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Location</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Specialization</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Patients</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Animal Patients</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Rating</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
@@ -292,7 +292,7 @@ export default function ManageVeterinarians() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1 text-sm font-medium text-gray-900">
                           <Users className="w-4 h-4 text-gray-400" />
-                          {vet.patients}
+                          {vet.animalPatients}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -373,8 +373,8 @@ export default function ManageVeterinarians() {
                     </Badge>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Total Patients</p>
-                    <p className="font-semibold">{selectedVet.patients}</p>
+                    <p className="text-sm text-gray-600 mb-1">Total Animal Patients</p>
+                    <p className="font-semibold">{selectedVet.animalPatients}</p>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600 mb-1">Rating</p>

@@ -1,20 +1,24 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Heart, User, Stethoscope, ShieldCheck } from "lucide-react"
+import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuth } from "@/hooks/use-auth"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { register, loading } = useAuth()
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -22,7 +26,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     phone: "",
-    role: "farmer" as "farmer" | "veterinarian" | "admin",
+    role: "farmer" as "farmer" | "veterinarian",
     district: "",
     sector: "",
   })
@@ -30,47 +34,52 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // For admin, show message
-    if (formData.role === "admin") {
+    if (!formData.name || !formData.email || !formData.password || !formData.phone || !formData.district || !formData.sector) {
       toast({
-        title: "Admin Registration",
-        description: "Please contact system administrator for admin account creation at admin@vetconnect.rw",
+        title: "Registration failed",
+        description: "Please fill in all fields",
         variant: "destructive",
       })
       return
     }
 
-    try {
-      const response = await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone,
-        role: formData.role,
-        district: formData.district,
-        sector: formData.sector,
-      })
-
-      if (response.success && response.data) {
-        toast({
-          title: "Registration successful",
-          description: `Welcome, ${response.data.user.name}! Please sign in.`,
-        })
-        router.push("/auth/login")
-      } else {
-        toast({
-          title: "Registration failed",
-          description: response.message || "Please check your details",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
+    // Save registration data (in real app, this would be API call to backend)
+    const registeredUsers = localStorage.getItem("registeredUsers")
+    const users = registeredUsers ? JSON.parse(registeredUsers) : []
+    
+    // Check if email already exists
+    if (users.find((u: any) => u.email === formData.email)) {
       toast({
         title: "Registration failed",
-        description: error instanceof Error ? error.message : "Something went wrong",
+        description: "Email already exists. Please sign in.",
         variant: "destructive",
       })
+      return
     }
+
+    // Add new user to registered users
+    users.push({
+      id: Date.now(),
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      role: formData.role,
+      phone: formData.phone,
+      district: formData.district,
+      sector: formData.sector
+    })
+    
+    localStorage.setItem("registeredUsers", JSON.stringify(users))
+
+    toast({
+      title: "Registration successful!",
+      description: `Welcome, ${formData.name}! Please sign in to continue.`,
+    })
+
+    // Redirect to login page
+    setTimeout(() => {
+      router.push("/auth/login")
+    }, 1500)
   }
 
   return (
@@ -91,184 +100,117 @@ export default function RegisterPage() {
             <CardTitle className="text-2xl">Create Account</CardTitle>
             <CardDescription>Fill in your details to get started</CardDescription>
           </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              {/* Role Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="role">I am a</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role: "farmer" })}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      formData.role === "farmer"
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-green-300"
-                    }`}
-                  >
-                    <User className={`w-6 h-6 mx-auto mb-2 ${
-                      formData.role === "farmer" ? "text-green-600" : "text-gray-400"
-                    }`} />
-                    <span className={`text-xs font-medium ${
-                      formData.role === "farmer" ? "text-green-600" : "text-gray-600"
-                    }`}>
-                      Farmer
-                    </span>
-                  </button>
+          <CardContent className="space-y-4">
+            
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="role">I am a</Label>
+              <Select value={formData.role} onValueChange={(value: "farmer" | "veterinarian") => setFormData({ ...formData, role: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="farmer">Farmer</SelectItem>
+                  <SelectItem value="veterinarian">Veterinarian</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role: "veterinarian" })}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      formData.role === "veterinarian"
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-blue-300"
-                    }`}
-                  >
-                    <Stethoscope className={`w-6 h-6 mx-auto mb-2 ${
-                      formData.role === "veterinarian" ? "text-blue-600" : "text-gray-400"
-                    }`} />
-                    <span className={`text-xs font-medium ${
-                      formData.role === "veterinarian" ? "text-blue-600" : "text-gray-600"
-                    }`}>
-                      Vet
-                    </span>
-                  </button>
+            {/* Name */}
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+              />
+            </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role: "admin" })}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      formData.role === "admin"
-                        ? "border-purple-500 bg-purple-50"
-                        : "border-gray-200 hover:border-purple-300"
-                    }`}
-                  >
-                    <ShieldCheck className={`w-6 h-6 mx-auto mb-2 ${
-                      formData.role === "admin" ? "text-purple-600" : "text-gray-400"
-                    }`} />
-                    <span className={`text-xs font-medium ${
-                      formData.role === "admin" ? "text-purple-600" : "text-gray-600"
-                    }`}>
-                      Admin
-                    </span>
-                  </button>
-                </div>
-              </div>
+            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </div>
 
-              {/* Admin Notice */}
-              {formData.role === "admin" && (
-                <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                  <p className="text-xs text-purple-900">
-                    <strong>Note:</strong> Admin accounts require authorization. Contact admin@vetconnect.rw
-                  </p>
-                </div>
-              )}
+            {/* Password */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                autoComplete="new-password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+              />
+            </div>
 
-              {/* Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-              </div>
+            {/* Phone */}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+250 788 123 456"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                required
+              />
+            </div>
 
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
-              </div>
+            {/* District */}
+            <div className="space-y-2">
+              <Label htmlFor="district">District</Label>
+              <Select value={formData.district} onValueChange={(value) => setFormData({ ...formData, district: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select district..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Nyagatare">Nyagatare</SelectItem>
+                  <SelectItem value="Gatsibo">Gatsibo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
-                />
-              </div>
+            {/* Sector */}
+            <div className="space-y-2">
+              <Label htmlFor="sector">Sector</Label>
+              <Input
+                id="sector"
+                type="text"
+                placeholder="e.g., Nyagatare Sector"
+                value={formData.sector}
+                onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
+                required
+              />
+            </div>
+          </CardContent>
 
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+250 788 123 456"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                />
-              </div>
-
-              {/* District */}
-              <div className="space-y-2">
-                <Label htmlFor="district">District</Label>
-                <Input
-                  id="district"
-                  type="text"
-                  placeholder="e.g., Kigali"
-                  value={formData.district}
-                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                  required
-                />
-              </div>
-
-              {/* Sector */}
-              <div className="space-y-2">
-                <Label htmlFor="sector">Sector</Label>
-                <Input
-                  id="sector"
-                  type="text"
-                  placeholder="e.g., Gasabo"
-                  value={formData.sector}
-                  onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-                  required
-                />
-              </div>
-            </CardContent>
-
-            <CardFooter className="flex flex-col gap-4">
-              <Button 
-                type="submit" 
-                className={`w-full ${
-                  formData.role === "admin" ? "bg-purple-600 hover:bg-purple-700" :
-                  formData.role === "veterinarian" ? "bg-blue-600 hover:bg-blue-700" :
-                  "bg-green-600 hover:bg-green-700"
-                }`}
-                disabled={loading}
-              >
-                {loading ? "Creating Account..." : "Create Account"}
-              </Button>
-              <p className="text-sm text-center text-gray-600">
-                Already have an account?{" "}
-                <Link href="/auth/login" className={`${
-                  formData.role === "admin" ? "text-purple-600" :
-                  formData.role === "veterinarian" ? "text-blue-600" :
-                  "text-green-600"
-                } hover:underline font-medium`}>
-                  Sign in
-                </Link>
-              </p>
-            </CardFooter>
-          </form>
+          <CardFooter className="flex flex-col gap-4">
+            <Button 
+              onClick={handleSubmit}
+              className="w-full bg-green-600 hover:bg-green-700"
+            >
+              Create Account
+            </Button>
+            <p className="text-sm text-center text-gray-600">
+              Already have an account?{" "}
+              <Link href="/auth/login" className="text-green-600 hover:underline font-medium">
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
         </Card>
 
         {/* Back to Home */}
