@@ -68,10 +68,10 @@ export default function NavigationBar() {
     if (user.role === "farmer") {
       return [
         { name: "Dashboard", href: "/dashboard/farmer", icon: LayoutDashboard },
-        { name: "My Livestock", href: "/dashboard/farmer/livestock", icon: Beef },
+        { name: "Livestock", href: "/dashboard/farmer/livestock", icon: Beef },
         { name: "Appointments", href: "/dashboard/farmer/appointments", icon: Calendar },
-        { name: "Book Appointment", href: "/dashboard/farmer/appointments/book", icon: Calendar },
-        { name: "Health Records", href: "/dashboard/farmer/health-records", icon: Activity },
+        //{ name: "Book Appointment", href: "/dashboard/farmer/appointments/book", icon: Calendar },
+        { name: "Records", href: "/dashboard/farmer/health-records", icon: Activity },
         { name: "Vet Reports", href: "/dashboard/farmer/reports", icon: FileText },
         { name: "Alerts", href: "/dashboard/farmer/alerts", icon: AlertTriangle },
       ]

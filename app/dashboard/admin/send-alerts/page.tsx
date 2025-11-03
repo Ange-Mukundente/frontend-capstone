@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Send, Mail, MessageSquare, AlertTriangle, CheckCircle, Users, Filter } from "lucide-react"
+import { ArrowLeft, Send, Mail, MessageSquare, AlertTriangle, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -106,24 +106,24 @@ export default function AdminSendAlerts() {
 
   const handleSendAlert = () => {
     if (!alertData.title || !alertData.message) {
-      alert("Please fill in title and message")
+      window.alert("Please fill in title and message")
       return
     }
 
     if (selectedFarmers.length === 0) {
-      alert("No farmers selected")
+      window.alert("No farmers selected")
       return
     }
 
-    // Create alert for history - FIXED: Store count instead of objects
-    const alert = {
+    // Create alert for history
+    const sentAlert = {
       id: Date.now(),
       title: alertData.title,
       message: alertData.message,
       priority: alertData.priority,
       type: alertData.type,
       sendVia: alertData.sendVia,
-      recipients: selectedFarmers.length, // FIXED: Just store the count
+      recipients: selectedFarmers.length,
       date: new Date().toISOString().split('T')[0],
       status: "sent",
       category: alertData.type.charAt(0).toUpperCase() + alertData.type.slice(1)
@@ -133,7 +133,7 @@ export default function AdminSendAlerts() {
     try {
       const existingAlerts = localStorage.getItem("sentAlerts")
       const alerts = existingAlerts ? JSON.parse(existingAlerts) : []
-      alerts.push(alert)
+      alerts.push(sentAlert)
       localStorage.setItem("sentAlerts", JSON.stringify(alerts))
 
       // Also save to farmers' health alerts
@@ -179,7 +179,7 @@ export default function AdminSendAlerts() {
 
     } catch (error) {
       console.error("Error sending alert:", error)
-      alert("Error sending alert. Please try again.")
+      window.alert("Error sending alert. Please try again.")
     }
   }
 

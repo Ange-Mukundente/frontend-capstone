@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Calendar, Clock, ArrowLeft, User, MapPin, Phone, CheckCircle, X, AlertCircle, FileText, ChevronLeft, ChevronRight, Search, Filter } from "lucide-react"
+import { Calendar, Clock, ArrowLeft, User, MapPin, Phone, CheckCircle, X, AlertTriangle, FileText, Search, Filter, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -48,10 +48,8 @@ export default function VeterinarianAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [filter, setFilter] = useState<FilterType>("all")
   const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [showDetails, setShowDetails] = useState(false)
-  const itemsPerPage = 6
 
   // Load appointments from localStorage
   useEffect(() => {
@@ -205,14 +203,14 @@ export default function VeterinarianAppointments() {
 
   const getUrgencyBadge = (urgency?: Appointment["urgency"]) => {
     switch (urgency) {
-      case "high": return <Badge variant="destructive">High Priority</Badge>
-      case "normal": return <Badge variant="outline">Normal</Badge>
-      case "low": return <Badge variant="secondary">Low Priority</Badge>
+      case "high": return <Badge variant="destructive" className="text-xs">High</Badge>
+      case "normal": return <Badge variant="outline" className="text-xs">Normal</Badge>
+      case "low": return <Badge variant="secondary" className="text-xs">Low</Badge>
       default: return null
     }
   }
 
-  // Filtered and paginated appointments
+  // Filtered appointments
   const filteredAppointments = appointments.filter(apt => {
     const matchesFilter = filter === "all" || apt.status === filter
     const matchesSearch = searchTerm === "" ||
@@ -222,11 +220,6 @@ export default function VeterinarianAppointments() {
       apt.location.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesFilter && matchesSearch
   })
-
-  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentAppointments = filteredAppointments.slice(startIndex, endIndex)
 
   // Handlers
   const handleConfirm = (id: number) => {
@@ -262,14 +255,9 @@ export default function VeterinarianAppointments() {
     setShowDetails(true)
   }
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
   return (
@@ -319,10 +307,7 @@ export default function VeterinarianAppointments() {
                     placeholder="Search by farmer, livestock, or location..."
                     className="pl-10"
                     value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value)
-                      setCurrentPage(1)
-                    }}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
@@ -330,10 +315,7 @@ export default function VeterinarianAppointments() {
               {/* Status Filter */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Status</label>
-                <Select value={filter} onValueChange={(value: FilterType) => {
-                  setFilter(value)
-                  setCurrentPage(1)
-                }}>
+                <Select value={filter} onValueChange={(value: FilterType) => setFilter(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -364,7 +346,6 @@ export default function VeterinarianAppointments() {
                   onClick={() => {
                     setSearchTerm("")
                     setFilter("all")
-                    setCurrentPage(1)
                   }}
                   className="h-6 text-xs"
                 >
@@ -375,240 +356,188 @@ export default function VeterinarianAppointments() {
           </CardContent>
         </Card>
 
-        {/* Results Summary */}
-        <div className="mb-4 text-sm text-gray-600 flex items-center justify-between">
-          <span>
-            Showing <span className="font-semibold text-gray-900">{startIndex + 1}-{Math.min(endIndex, filteredAppointments.length)}</span> of{" "}
-            <span className="font-semibold text-gray-900">{filteredAppointments.length}</span> appointments
-          </span>
-          {totalPages > 1 && (
-            <span className="text-gray-600">
-              Page <span className="font-semibold text-gray-900">{currentPage}</span> of{" "}
-              <span className="font-semibold text-gray-900">{totalPages}</span>
-            </span>
-          )}
-        </div>
-
-        {/* Appointments Grid - 2 columns */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          {currentAppointments.length === 0 ? (
-            <Card className="col-span-full shadow-md border-gray-200">
-              <CardContent className="py-16 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Calendar className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">No appointments found</h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  {filter !== "all" 
-                    ? `You don't have any ${filter} appointments` 
-                    : "Try adjusting your search criteria"}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            currentAppointments.map(appointment => (
-              <Card 
-                key={appointment.id} 
-                className={`hover:shadow-xl transition-all duration-200 border-gray-200 bg-white ${
-                  appointment.urgency === "high" ? "border-l-4 border-l-red-500" : ""
-                }`}
-              >
-                <CardContent className="p-6">
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">{appointment.farmerName}</h3>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {getStatusBadge(appointment.status)}
-                        {getUrgencyBadge(appointment.urgency)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Livestock Info */}
-                  <div className="mb-4 p-3 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg border border-green-100">
-                    <p className="text-sm font-medium text-gray-900">
-                      {appointment.livestockName || appointment.livestockType} ({appointment.livestockType})
-                    </p>
-                  </div>
-
-                  {/* Details */}
-                  <div className="space-y-2 mb-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-600" />
-                      <span className="font-medium text-gray-900">{formatDate(appointment.date)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-600" />
-                      <span className="text-gray-600">{appointment.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-600" />
-                      <span className="text-gray-600">{appointment.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-gray-600" />
-                      <span className="text-gray-600">{appointment.farmerPhone}</span>
-                    </div>
-                  </div>
-
-                  {/* Reason */}
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-sm">
-                      <span className="font-semibold text-gray-700">Reason: </span>
-                      <span className="text-gray-600">{appointment.reason}</span>
-                    </p>
-                    {(appointment.issue || appointment.notes) && (
-                      <p className="text-sm mt-1 text-gray-600">
-                        {appointment.issue || appointment.notes}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
-                    {appointment.status === "pending" && (
-                      <>
-                        <Button 
-                          size="sm" 
-                          className="flex-1 bg-green-600 hover:bg-green-700" 
-                          onClick={() => handleConfirm(appointment.id)}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          Confirm
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="flex-1 hover:bg-red-50 hover:border-red-300" 
-                          onClick={() => handleCancel(appointment.id)}
-                        >
-                          <X className="w-4 h-4 mr-1" />
-                          Decline
-                        </Button>
-                      </>
-                    )}
-                    {appointment.status === "confirmed" && (
-                      <>
-                        <Button 
-                          size="sm" 
-                          className="flex-1 bg-blue-600 hover:bg-blue-700" 
-                          onClick={() => handleComplete(appointment.id)}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          Complete
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="flex-1" 
-                          onClick={() => handleViewDetails(appointment)}
-                        >
-                          <FileText className="w-4 h-4 mr-1" />
-                          Details
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          className="w-full bg-green-600 hover:bg-green-700 mt-2" 
-                          onClick={() => router.push(`/dashboard/veterinarian/appointments/report?appointmentId=${appointment.id}`)}
-                        >
-                          <FileText className="w-4 h-4 mr-1" />
-                          Write Report
-                        </Button>
-                      </>
-                    )}
-                    {appointment.status === "completed" && (
-                      <>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="flex-1" 
-                          onClick={() => handleViewDetails(appointment)}
-                        >
-                          <FileText className="w-4 h-4 mr-1" />
-                          View Details
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          className="flex-1 bg-green-600 hover:bg-green-700" 
-                          onClick={() => router.push(`/dashboard/veterinarian/appointments/report?appointmentId=${appointment.id}`)}
-                        >
-                          <FileText className="w-4 h-4 mr-1" />
-                          View/Edit Report
-                        </Button>
-                      </>
-                    )}
-                    {appointment.status === "cancelled" && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="w-full" 
-                        onClick={() => handleViewDetails(appointment)}
+        {/* Appointments Table */}
+        <Card className="shadow-lg border-0">
+          <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white">
+            <CardTitle>Appointments List</CardTitle>
+            <p className="text-sm text-gray-600 mt-1">
+              Showing {filteredAppointments.length} of {appointments.length} appointments
+            </p>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Date & Time</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Farmer</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Livestock</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Reason</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Location</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredAppointments.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center">
+                        <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-600">No appointments found</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {filter !== "all" 
+                            ? `You don't have any ${filter} appointments` 
+                            : "Try adjusting your search criteria"}
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredAppointments.map((appointment) => (
+                      <tr 
+                        key={appointment.id} 
+                        className={`hover:bg-gray-50 transition-colors ${
+                          appointment.urgency === "high" ? "bg-red-50" : ""
+                        }`}
                       >
-                        <FileText className="w-4 h-4 mr-2" />
-                        View Details
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                        {/* Date & Time */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{formatDate(appointment.date)}</p>
+                              <p className="text-xs text-gray-500">{appointment.time}</p>
+                            </div>
+                          </div>
+                        </td>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
-            </Button>
-            
-            <div className="flex gap-1">
-              {[...Array(totalPages)].map((_, index) => {
-                const page = index + 1
-                return (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handlePageChange(page)}
-                    className="w-10"
-                  >
-                    {page}
-                  </Button>
-                )
-              })}
+                        {/* Farmer */}
+                        <td className="px-6 py-4">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{appointment.farmerName}</p>
+                            <p className="text-xs text-gray-500">{appointment.farmerPhone}</p>
+                          </div>
+                        </td>
+
+                        {/* Livestock */}
+                        <td className="px-6 py-4">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{appointment.livestockName || appointment.livestockType}</p>
+                            <p className="text-xs text-gray-500">{appointment.livestockType}</p>
+                          </div>
+                        </td>
+
+                        {/* Reason */}
+                        <td className="px-6 py-4">
+                          <div>
+                            <p className="text-sm text-gray-900">{appointment.reason}</p>
+                            {appointment.urgency && (
+                              <div className="mt-1">
+                                {getUrgencyBadge(appointment.urgency)}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Location */}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1 text-sm text-gray-600">
+                            <MapPin className="w-3 h-3" />
+                            <span className="truncate max-w-[150px]">{appointment.location}</span>
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(appointment.status)}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleViewDetails(appointment)}
+                              title="View Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            
+                            {appointment.status === "pending" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700"
+                                  onClick={() => handleConfirm(appointment.id)}
+                                  title="Confirm"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="hover:bg-red-50"
+                                  onClick={() => handleCancel(appointment.id)}
+                                  title="Cancel"
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                            
+                            {appointment.status === "confirmed" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  className="bg-blue-600 hover:bg-blue-700"
+                                  onClick={() => handleComplete(appointment.id)}
+                                  title="Mark as Complete"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700"
+                                  onClick={() => router.push(`/dashboard/veterinarian/appointments/report?appointmentId=${appointment.id}`)}
+                                  title="Write Report"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                            
+                            {appointment.status === "completed" && (
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => router.push(`/dashboard/veterinarian/appointments/report?appointmentId=${appointment.id}`)}
+                                title="View/Edit Report"
+                              >
+                                <FileText className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-        )}
+          </CardContent>
+        </Card>
 
         {/* Info Box */}
         {appointments.length > 0 && (
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="bg-blue-50 border-blue-200 mt-6">
             <CardContent className="py-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <AlertTriangle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="font-semibold text-blue-900 mb-1">Appointment Tips</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
                     <li>• Confirm appointments at least 24 hours in advance</li>
-                    <li>• High priority cases (red border) require immediate attention</li>
+                    <li>• High priority cases (red background) require immediate attention</li>
                     <li>• Contact farmers if you need to reschedule</li>
                     <li>• Complete visit reports immediately after each appointment</li>
                   </ul>
@@ -620,22 +549,11 @@ export default function VeterinarianAppointments() {
 
         {/* Details Modal */}
         <Dialog open={showDetails} onOpenChange={setShowDetails}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{selectedAppointment?.farmerName}</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Appointment Details
-                  </div>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setShowDetails(false)}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+              <DialogTitle>
+                <div className="text-2xl font-bold text-gray-900">{selectedAppointment?.farmerName}</div>
+                <div className="text-sm text-gray-600 mt-1">Appointment Details</div>
               </DialogTitle>
             </DialogHeader>
             
@@ -646,41 +564,39 @@ export default function VeterinarianAppointments() {
                   {getUrgencyBadge(selectedAppointment.urgency)}
                 </div>
 
-                <Card>
-                  <CardContent className="p-4 space-y-3">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-700 mb-1">Livestock</p>
-                      <p className="text-sm text-gray-900">
-                        {selectedAppointment.livestockName || selectedAppointment.livestockType} ({selectedAppointment.livestockType})
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-700 mb-1">Date & Time</p>
-                      <p className="text-sm text-gray-900">{formatDate(selectedAppointment.date)} at {selectedAppointment.time}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-700 mb-1">Location</p>
-                      <p className="text-sm text-gray-900">{selectedAppointment.location}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-700 mb-1">Contact</p>
-                      <p className="text-sm text-gray-900">{selectedAppointment.farmerPhone}</p>
-                      {selectedAppointment.farmerEmail && (
-                        <p className="text-sm text-gray-600">{selectedAppointment.farmerEmail}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-700 mb-1">Reason</p>
-                      <p className="text-sm text-gray-900">{selectedAppointment.reason}</p>
-                    </div>
-                    {(selectedAppointment.issue || selectedAppointment.notes) && (
-                      <div>
-                        <p className="text-sm font-semibold text-gray-700 mb-1">Additional Details</p>
-                        <p className="text-sm text-gray-900">{selectedAppointment.issue || selectedAppointment.notes}</p>
-                      </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Livestock</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedAppointment.livestockName || selectedAppointment.livestockType} ({selectedAppointment.livestockType})
+                    </p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Date & Time</p>
+                    <p className="text-sm text-gray-900">{formatDate(selectedAppointment.date)} at {selectedAppointment.time}</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Location</p>
+                    <p className="text-sm text-gray-900">{selectedAppointment.location}</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Contact</p>
+                    <p className="text-sm text-gray-900">{selectedAppointment.farmerPhone}</p>
+                    {selectedAppointment.farmerEmail && (
+                      <p className="text-xs text-gray-600 mt-1">{selectedAppointment.farmerEmail}</p>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg md:col-span-2">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Reason</p>
+                    <p className="text-sm text-gray-900">{selectedAppointment.reason}</p>
+                  </div>
+                  {(selectedAppointment.issue || selectedAppointment.notes) && (
+                    <div className="p-4 bg-gray-50 rounded-lg md:col-span-2">
+                      <p className="text-sm font-semibold text-gray-700 mb-1">Additional Details</p>
+                      <p className="text-sm text-gray-900">{selectedAppointment.issue || selectedAppointment.notes}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </DialogContent>
