@@ -1,17 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Plus, Edit, Trash2, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-// --- Define Livestock type ---
 type Livestock = {
   id: number
   name: string
@@ -25,8 +24,6 @@ type Livestock = {
 }
 
 export default function LivestockManagement() {
-  const router = useRouter()
-
   const [livestock, setLivestock] = useState<Livestock[]>([])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
@@ -41,13 +38,11 @@ export default function LivestockManagement() {
     notes: ""
   })
 
-  // Pagination and Filter/Search State
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 6
+  const itemsPerPage = 10
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState("All")
 
-  // --- Helper to safely parse JSON ---
   const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
     if (typeof window === "undefined") return defaultValue
     try {
@@ -61,7 +56,6 @@ export default function LivestockManagement() {
     }
   }
 
-  // --- useEffect to load livestock ---
   useEffect(() => {
     const sampleData: Livestock[] = [
       { id: 1, name: "Cow #1", type: "Cattle", breed: "Friesian", age: "3 years", weight: "450kg", healthStatus: "healthy", lastCheckup: "2025-10-10", notes: "Vaccination up to date" },
@@ -172,7 +166,6 @@ export default function LivestockManagement() {
     }
   }
 
-  // --- Filtered Livestock based on search + status ---
   const filteredLivestock = livestock.filter((animal) => {
     const matchesSearch =
       animal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -193,7 +186,7 @@ export default function LivestockManagement() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-4">
-          <Button variant="outline" onClick={() => router.back()}>
+          <Button variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
@@ -210,7 +203,6 @@ export default function LivestockManagement() {
           </Button>
         </div>
 
-        {/* --- Search and Filter --- */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
           <Input
             placeholder="Search by name or type..."
@@ -237,7 +229,6 @@ export default function LivestockManagement() {
           </select>
         </div>
 
-        {/* --- Cards Grid --- */}
         {filteredLivestock.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
@@ -257,61 +248,59 @@ export default function LivestockManagement() {
           </Card>
         ) : (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {currentAnimals.map((animal) => (
-                <Card key={animal.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>{animal.name}</CardTitle>
-                        <CardDescription>{animal.type} - {animal.breed}</CardDescription>
-                      </div>
-                      {getStatusBadge(animal.healthStatus)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Age:</span>
-                        <span className="font-medium">{animal.age}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Weight:</span>
-                        <span className="font-medium">{animal.weight}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Last Checkup:</span>
-                        <span className="font-medium">{animal.lastCheckup}</span>
-                      </div>
-                      {animal.notes && (
-                        <div className="text-sm mt-2 p-2 bg-gray-50 rounded">
-                          <p className="text-gray-600 italic">{animal.notes}</p>
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Breed</TableHead>
+                    <TableHead>Age</TableHead>
+                    <TableHead>Weight</TableHead>
+                    <TableHead>Health Status</TableHead>
+                    <TableHead>Last Checkup</TableHead>
+                    <TableHead>Notes</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentAnimals.map((animal) => (
+                    <TableRow key={animal.id}>
+                      <TableCell className="font-medium">{animal.name}</TableCell>
+                      <TableCell>{animal.type}</TableCell>
+                      <TableCell>{animal.breed}</TableCell>
+                      <TableCell>{animal.age}</TableCell>
+                      <TableCell>{animal.weight}</TableCell>
+                      <TableCell>{getStatusBadge(animal.healthStatus)}</TableCell>
+                      <TableCell>{animal.lastCheckup}</TableCell>
+                      <TableCell className="max-w-xs truncate" title={animal.notes}>
+                        {animal.notes || "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openUpdateModal(animal)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteLivestock(animal.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        className="flex-1"
-                        onClick={() => openUpdateModal(animal)}
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Update
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDeleteLivestock(animal.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
 
-            {/* --- Pagination Buttons --- */}
             <div className="flex justify-center mt-6 space-x-2">
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -328,7 +317,6 @@ export default function LivestockManagement() {
           </>
         )}
 
-        {/* --- Add Modal --- */}
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogContent>
             <DialogHeader>
@@ -383,7 +371,6 @@ export default function LivestockManagement() {
           </DialogContent>
         </Dialog>
 
-        {/* --- Update Modal --- */}
         <Dialog open={isUpdateModalOpen} onOpenChange={setIsUpdateModalOpen}>
           <DialogContent>
             <DialogHeader>
