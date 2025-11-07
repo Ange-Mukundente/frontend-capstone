@@ -56,6 +56,12 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      console.log('═══════════════════════════════════════')
+      console.log('🔵 LOGIN ATTEMPT STARTED')
+      console.log('📧 Email:', formData.email)
+      console.log('🔗 Backend URL:', BACKEND_URL)
+      console.log('═══════════════════════════════════════')
+      
       const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
@@ -67,32 +73,73 @@ export default function LoginPage() {
         }),
       })
 
+      console.log('📡 Response Status:', response.status)
+      console.log('📡 Response OK:', response.ok)
+
       const data = await response.json()
+      console.log('📦 Full Response Data:', data)
 
       if (response.ok && data.success) {
+        const user = data.data.user
+        const token = data.data.token
+        const role = user.role
+        
+        console.log('═══════════════════════════════════════')
+        console.log('✅ LOGIN SUCCESSFUL!')
+        console.log('👤 User Name:', user.name)
+        console.log('👤 User Email:', user.email)
+        console.log('🎭 User Role:', role)
+        console.log('🎭 Role Type:', typeof role)
+        console.log('🔑 Token:', token ? 'Token received ✓' : 'No token ✗')
+        console.log('═══════════════════════════════════════')
+        
         toast({
           title: "✅ Login Successful!",
-          description: `Welcome back, ${data.data.user.name}!`,
+          description: `Welcome back, ${user.name}! (Role: ${role})`,
         })
 
         // Store token and user data
-        localStorage.setItem('token', data.data.token)
-        localStorage.setItem('user', JSON.stringify(data.data.user))
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+        
+        console.log('💾 Data saved to localStorage')
+        console.log('💾 Stored user:', localStorage.getItem('user'))
 
-        // Redirect based on role
-        const role = data.data.user.role
+        // Determine redirect path based on role (case-insensitive)
+        const roleLower = role.toLowerCase().trim()
+        let redirectPath = '/dashboard'
+        
+        console.log('🔍 Checking role for redirect...')
+        console.log('🔍 Role (lowercase):', roleLower)
+        
+        if (roleLower === 'farmer') {
+          redirectPath = '/dashboard/farmer'
+          console.log('🚜 → Redirecting to FARMER dashboard')
+        } else if (roleLower === 'veterinarian' || roleLower === 'vet') {
+          redirectPath = '/dashboard/veterinarian'
+          console.log('🩺 → Redirecting to VET dashboard')
+        } else if (roleLower === 'admin' || roleLower === 'administrator') {
+          redirectPath = '/dashboard/admin'
+          console.log('👨‍💼 → Redirecting to ADMIN dashboard')
+        } else {
+          console.log('❓ → Unknown role, redirecting to default dashboard')
+          console.log('⚠️ Role received:', role)
+        }
+        
+        console.log('🔀 Final Redirect Path:', redirectPath)
+        console.log('═══════════════════════════════════════')
+        
         setTimeout(() => {
-          if (role === 'farmer') {
-            router.push('/dashboard/farmer')
-          } else if (role === 'veterinarian' || role === 'vet') {
-            router.push('/dashboard/veterinarian')
-          } else if (role === 'admin') {
-            router.push('/dashboard/admin')
-          } else {
-            router.push('/dashboard')
-          }
-        }, 1000)
+          console.log('🚀 Executing redirect NOW...')
+          router.push(redirectPath)
+        }, 1500)
       } else {
+        console.log('═══════════════════════════════════════')
+        console.error('❌ LOGIN FAILED')
+        console.error('Error Message:', data.message)
+        console.error('Full Error Data:', data)
+        console.log('═══════════════════════════════════════')
+        
         toast({
           title: "Login Failed",
           description: data.message || "Invalid credentials. Please try again.",
@@ -100,10 +147,14 @@ export default function LoginPage() {
         })
       }
     } catch (error) {
-      console.error('Login error:', error)
+      console.log('═══════════════════════════════════════')
+      console.error('💥 FATAL ERROR DURING LOGIN')
+      console.error('Error Details:', error)
+      console.log('═══════════════════════════════════════')
+      
       toast({
-        title: "Error",
-        description: "Failed to connect to server. Please check your connection.",
+        title: "Connection Error",
+        description: "Failed to connect to server. Please check your backend is running.",
         variant: "destructive"
       })
     } finally {
