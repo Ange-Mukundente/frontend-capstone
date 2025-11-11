@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Send, Mail, MessageSquare, AlertTriangle, Users } from "lucide-react"
+import { ArrowLeft, Send, Mail, MessageSquare, AlertTriangle, Users, Loader2, CheckCircle, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -19,12 +19,13 @@ import {
 import { useToast } from "@/hooks/use-toast"
 
 interface Farmer {
-  id: number
+  id: number | string
   name: string
   email: string
   phone: string
   district: string
   sector: string
+  source?: 'database' | 'hardcoded'
 }
 
 interface AlertData {
@@ -39,39 +40,101 @@ interface AlertData {
   targetFarmerId: string
 }
 
+interface SMSResult {
+  farmer: string
+  phone: string
+  source: string
+  status: string
+  error?: string
+}
+
 export default function AdminSendAlerts() {
   const router = useRouter()
   const { toast } = useToast()
   const [farmers, setFarmers] = useState<Farmer[]>([])
   const [filteredFarmers, setFilteredFarmers] = useState<Farmer[]>([])
   const [selectedFarmers, setSelectedFarmers] = useState<number[]>([])
+  const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState(false)
   const [alertData, setAlertData] = useState<AlertData>({
     title: "",
     message: "",
     priority: "medium",
     type: "general",
-    sendVia: "both",
+    sendVia: "sms",
     targetAudience: "all",
     targetDistrict: "",
     targetSector: "",
     targetFarmerId: ""
   })
 
-  // Sample farmers data
+  // Hardcoded farmers (demo data)
+  const hardcodedFarmers: Farmer[] = [
+    { id: 1, name: "Mary Uwase", email: "mary.uwase@example.com", phone: "+250 786160692", district: "Nyagatare", sector: "Nyagatare Sector", source: "hardcoded" },
+    { id: 2, name: "John Mugisha", email: "john.mugisha@example.com", phone: "+250 786160692", district: "Nyagatare", sector: "Rwimiyaga Sector", source: "hardcoded" },
+    { id: 3, name: "Jean Kamanzi", email: "jean.kamanzi@example.com", phone: "+250 786160692", district: "Nyagatare", sector: "Karama Sector", source: "hardcoded" },
+    { id: 4, name: "Alice Mukasine", email: "alice.mukasine@example.com", phone: "+250 786160692", district: "Gatsibo", sector: "Gatsibo Sector", source: "hardcoded" },
+    { id: 5, name: "Peter Habimana", email: "peter.habimana@example.com", phone: "+250 786160692", district: "Gatsibo", sector: "Kabarore Sector", source: "hardcoded" },
+  ]
+
+  // Fetch farmers from API on component mount
   useEffect(() => {
-    const sampleFarmers: Farmer[] = [
-      { id: 1, name: "Mary Uwase", email: "mary.uwase@example.com", phone: "+250 788 123 456", district: "Nyagatare", sector: "Nyagatare Sector" },
-      { id: 2, name: "John Mugisha", email: "john.mugisha@example.com", phone: "+250 788 234 567", district: "Nyagatare", sector: "Rwimiyaga Sector" },
-      { id: 3, name: "Jean Kamanzi", email: "jean.kamanzi@example.com", phone: "+250 788 345 678", district: "Nyagatare", sector: "Karama Sector" },
-      { id: 4, name: "Alice Mukasine", email: "alice.mukasine@example.com", phone: "+250 788 456 789", district: "Gatsibo", sector: "Gatsibo Sector" },
-      { id: 5, name: "Peter Habimana", email: "peter.habimana@example.com", phone: "+250 788 567 890", district: "Gatsibo", sector: "Kabarore Sector" },
-      { id: 6, name: "Grace Uwera", email: "grace.uwera@example.com", phone: "+250 788 678 901", district: "Gatsibo", sector: "Kiramuruzi Sector" },
-      { id: 7, name: "Emmanuel Nkusi", email: "emmanuel.nkusi@example.com", phone: "+250 788 789 012", district: "Nyagatare", sector: "Mimuri Sector" },
-      { id: 8, name: "Sarah Ingabire", email: "sarah.ingabire@example.com", phone: "+250 788 890 123", district: "Gatsibo", sector: "Rugarama Sector" },
-    ]
-    setFarmers(sampleFarmers)
-    setFilteredFarmers(sampleFarmers)
+    fetchFarmers()
   }, [])
+
+  const fetchFarmers = async () => {
+    setLoading(true)
+    try {
+      const token = localStorage.getItem("token")
+      
+      if (!token) {
+        // If no token, just use hardcoded farmers
+        setFarmers(hardcodedFarmers)
+        setFilteredFarmers(hardcodedFarmers)
+        setLoading(false)
+        return
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/farmers`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Merge database farmers with hardcoded farmers
+        const dbFarmers: Farmer[] = (data.data || []).map((farmer: any) => ({
+          id: farmer._id,
+          name: farmer.name,
+          email: farmer.email,
+          phone: farmer.phone || farmer.phoneNumber,
+          district: farmer.district || "Unknown",
+          sector: farmer.sector || "Unknown",
+          source: 'database' as const
+        }))
+
+        const allFarmers = [...hardcodedFarmers, ...dbFarmers]
+        setFarmers(allFarmers)
+        setFilteredFarmers(allFarmers)
+        
+        console.log(`📊 Loaded ${hardcodedFarmers.length} hardcoded + ${dbFarmers.length} database farmers`)
+      } else {
+        // Fallback to hardcoded farmers
+        setFarmers(hardcodedFarmers)
+        setFilteredFarmers(hardcodedFarmers)
+      }
+    } catch (error) {
+      console.error("Error fetching farmers:", error)
+      // Fallback to hardcoded farmers
+      setFarmers(hardcodedFarmers)
+      setFilteredFarmers(hardcodedFarmers)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Filter farmers based on target audience
   useEffect(() => {
@@ -86,7 +149,7 @@ export default function AdminSendAlerts() {
     }
 
     setFilteredFarmers(filtered)
-    setSelectedFarmers(filtered.map(f => f.id))
+    setSelectedFarmers(filtered.map(f => typeof f.id === 'string' ? parseInt(f.id) : f.id))
   }, [alertData.targetAudience, alertData.targetDistrict, alertData.targetSector, alertData.targetFarmerId, farmers])
 
   const handleInputChange = (name: string, value: string) => {
@@ -104,82 +167,128 @@ export default function AdminSendAlerts() {
     return [...new Set(farmers.map(f => f.sector))]
   }
 
-  const handleSendAlert = () => {
+  const handleSendAlert = async () => {
     if (!alertData.title || !alertData.message) {
-      window.alert("Please fill in title and message")
+      toast({
+        title: "❌ Error",
+        description: "Please fill in title and message",
+        variant: "destructive"
+      })
       return
     }
 
     if (selectedFarmers.length === 0) {
-      window.alert("No farmers selected")
+      toast({
+        title: "❌ Error",
+        description: "No farmers selected",
+        variant: "destructive"
+      })
       return
     }
 
-    // Create alert for history
-    const sentAlert = {
-      id: Date.now(),
-      title: alertData.title,
-      message: alertData.message,
-      priority: alertData.priority,
-      type: alertData.type,
-      sendVia: alertData.sendVia,
-      recipients: selectedFarmers.length,
-      date: new Date().toISOString().split('T')[0],
-      status: "sent",
-      category: alertData.type.charAt(0).toUpperCase() + alertData.type.slice(1)
-    }
+    setSending(true)
 
-    // Save to localStorage (alerts history)
     try {
-      const existingAlerts = localStorage.getItem("sentAlerts")
-      const alerts = existingAlerts ? JSON.parse(existingAlerts) : []
-      alerts.push(sentAlert)
-      localStorage.setItem("sentAlerts", JSON.stringify(alerts))
+      const token = localStorage.getItem("token")
 
-      // Also save to farmers' health alerts
-      selectedFarmers.forEach(farmerId => {
-        const farmer = farmers.find(f => f.id === farmerId)
-        if (farmer) {
-          const farmerAlert = {
-            id: Date.now() + farmerId,
-            type: alertData.type,
-            message: alertData.message,
-            date: new Date().toISOString().split('T')[0],
-            priority: alertData.priority,
-            title: alertData.title,
-            sentVia: alertData.sendVia
-          }
-          
-          // Store in healthAlerts for each farmer
-          const farmerAlertsKey = `healthAlerts_${farmer.name}`
-          const existingFarmerAlerts = localStorage.getItem(farmerAlertsKey)
-          const farmerAlerts = existingFarmerAlerts ? JSON.parse(existingFarmerAlerts) : []
-          farmerAlerts.push(farmerAlert)
-          localStorage.setItem(farmerAlertsKey, JSON.stringify(farmerAlerts))
+      if (!token) {
+        toast({
+          title: "❌ Authentication Required",
+          description: "Please login to send alerts",
+          variant: "destructive"
+        })
+        setSending(false)
+        return
+      }
+
+      // Send broadcast alert via API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/broadcast`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: `${alertData.title}\n\n${alertData.message}`,
+          priority: alertData.priority
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Save to localStorage for history
+        const sentAlert = {
+          id: Date.now(),
+          title: alertData.title,
+          message: alertData.message,
+          priority: alertData.priority,
+          type: alertData.type,
+          sendVia: alertData.sendVia,
+          recipients: result.data.totalFarmers,
+          successCount: result.data.successCount,
+          failureCount: result.data.failureCount,
+          date: new Date().toISOString().split('T')[0],
+          status: "sent",
+          category: alertData.type.charAt(0).toUpperCase() + alertData.type.slice(1),
+          results: result.data.results
         }
-      })
 
-      toast({
-        title: "✅ Alert Sent Successfully!",
-        description: `Sent to ${selectedFarmers.length} farmer${selectedFarmers.length > 1 ? 's' : ''} via ${alertData.sendVia === 'both' ? 'SMS & Email' : alertData.sendVia.toUpperCase()}`
-      })
+        const existingAlerts = localStorage.getItem("sentAlerts")
+        const alerts = existingAlerts ? JSON.parse(existingAlerts) : []
+        alerts.push(sentAlert)
+        localStorage.setItem("sentAlerts", JSON.stringify(alerts))
 
-      // Reset form
-      setAlertData({
-        title: "",
-        message: "",
-        priority: "medium",
-        type: "general",
-        sendVia: "both",
-        targetAudience: "all",
-        targetDistrict: "",
-        targetSector: "",
-        targetFarmerId: ""
-      })
+        // Show detailed success message
+        toast({
+          title: "✅ Alert Sent Successfully!",
+          description: (
+            <div className="mt-2 space-y-1">
+              <p>Total: {result.data.totalFarmers} farmers</p>
+              <p className="text-green-600">✅ Success: {result.data.successCount}</p>
+              {result.data.failureCount > 0 && (
+                <p className="text-red-600">❌ Failed: {result.data.failureCount}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-2">
+                {result.data.breakdown.database} from database, {result.data.breakdown.hardcoded} demo farmers
+              </p>
+            </div>
+          )
+        })
 
-    } catch (error) {
+        // Reset form
+        setAlertData({
+          title: "",
+          message: "",
+          priority: "medium",
+          type: "general",
+          sendVia: "sms",
+          targetAudience: "all",
+          targetDistrict: "",
+          targetSector: "",
+          targetFarmerId: ""
+        })
+
+        // Show detailed results in console
+        console.log("📊 SMS Broadcast Results:", result.data.results)
+
+      } else {
+        toast({
+          title: "❌ Error Sending Alert",
+          description: result.message || "Failed to send alert. Please try again.",
+          variant: "destructive"
+        })
+      }
+
+    } catch (error: any) {
       console.error("Error sending alert:", error)
-      window.alert("Error sending alert. Please try again.")
+      toast({
+        title: "❌ Server Error",
+        description: error.message || "Failed to connect to server. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setSending(false)
     }
   }
 
@@ -194,6 +303,17 @@ export default function AdminSendAlerts() {
       default:
         return <Badge>Normal</Badge>
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading farmers...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -217,7 +337,7 @@ export default function AdminSendAlerts() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Send Alerts to Farmers</h1>
-                <p className="text-gray-600">Send important notifications via SMS and Email</p>
+                <p className="text-gray-600">Send important notifications via SMS to all farmers</p>
               </div>
             </div>
           </div>
@@ -230,7 +350,7 @@ export default function AdminSendAlerts() {
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle>Create Alert</CardTitle>
-                <CardDescription>Compose your message and select delivery method</CardDescription>
+                <CardDescription>Compose your message to send via SMS</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
 
@@ -290,57 +410,8 @@ export default function AdminSendAlerts() {
                     className="mt-1"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    {alertData.message.length} characters
+                    {alertData.message.length} characters • SMS will be sent to all farmers
                   </p>
-                </div>
-
-                {/* Delivery Method */}
-                <div>
-                  <Label>Delivery Method</Label>
-                  <div className="grid grid-cols-3 gap-3 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => handleInputChange('sendVia', 'both')}
-                      className={`p-3 border rounded-lg transition-all ${
-                        alertData.sendVia === 'both'
-                          ? 'border-purple-500 bg-purple-50 text-purple-700'
-                          : 'border-gray-300 hover:border-purple-300'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center gap-2">
-                        <Send className="w-5 h-5" />
-                        <span className="text-sm font-medium">Both</span>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInputChange('sendVia', 'sms')}
-                      className={`p-3 border rounded-lg transition-all ${
-                        alertData.sendVia === 'sms'
-                          ? 'border-purple-500 bg-purple-50 text-purple-700'
-                          : 'border-gray-300 hover:border-purple-300'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center gap-2">
-                        <MessageSquare className="w-5 h-5" />
-                        <span className="text-sm font-medium">SMS Only</span>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInputChange('sendVia', 'email')}
-                      className={`p-3 border rounded-lg transition-all ${
-                        alertData.sendVia === 'email'
-                          ? 'border-purple-500 bg-purple-50 text-purple-700'
-                          : 'border-gray-300 hover:border-purple-300'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center gap-2">
-                        <Mail className="w-5 h-5" />
-                        <span className="text-sm font-medium">Email Only</span>
-                      </div>
-                    </button>
-                  </div>
                 </div>
 
                 {/* Target Audience */}
@@ -351,7 +422,7 @@ export default function AdminSendAlerts() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Farmers</SelectItem>
+                      <SelectItem value="all">All Farmers (Recommended)</SelectItem>
                       <SelectItem value="district">Specific District</SelectItem>
                       <SelectItem value="sector">Specific Sector</SelectItem>
                       <SelectItem value="individual">Individual Farmer</SelectItem>
@@ -422,10 +493,19 @@ export default function AdminSendAlerts() {
                   <Button 
                     onClick={handleSendAlert}
                     className="w-full bg-purple-600 hover:bg-purple-700"
-                    disabled={!alertData.title || !alertData.message || selectedFarmers.length === 0}
+                    disabled={!alertData.title || !alertData.message || selectedFarmers.length === 0 || sending}
                   >
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Alert to {selectedFarmers.length} Farmer{selectedFarmers.length !== 1 ? 's' : ''}
+                    {sending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Sending SMS...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4 mr-2" />
+                        Send SMS Alert to {filteredFarmers.length} Farmer{filteredFarmers.length !== 1 ? 's' : ''}
+                      </>
+                    )}
                   </Button>
                 </div>
 
@@ -439,7 +519,7 @@ export default function AdminSendAlerts() {
             {/* Alert Preview */}
             <Card className="border-purple-200 bg-purple-50">
               <CardHeader>
-                <CardTitle className="text-lg">Preview</CardTitle>
+                <CardTitle className="text-lg">SMS Preview</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {alertData.title ? (
@@ -448,20 +528,13 @@ export default function AdminSendAlerts() {
                       <h4 className="font-semibold text-gray-900">{alertData.title}</h4>
                       {getPriorityBadge(alertData.priority)}
                     </div>
-                    <p className="text-sm text-gray-700 bg-white p-3 rounded-lg">
-                      {alertData.message || "Your message will appear here..."}
+                    <p className="text-sm text-gray-700 bg-white p-3 rounded-lg whitespace-pre-wrap">
+                      {`[VetConnect Alert]\n\n${alertData.message || "Your message will appear here..."}\n\n- VetConnect Rwanda`}
                     </p>
                     <div className="flex items-center gap-2 text-xs text-gray-600">
-                      {alertData.sendVia === 'both' || alertData.sendVia === 'sms' ? (
-                        <Badge variant="outline" className="gap-1">
-                          <MessageSquare className="w-3 h-3" /> SMS
-                        </Badge>
-                      ) : null}
-                      {alertData.sendVia === 'both' || alertData.sendVia === 'email' ? (
-                        <Badge variant="outline" className="gap-1">
-                          <Mail className="w-3 h-3" /> Email
-                        </Badge>
-                      ) : null}
+                      <Badge variant="outline" className="gap-1">
+                        <MessageSquare className="w-3 h-3" /> SMS
+                      </Badge>
                     </div>
                   </>
                 ) : (
@@ -477,16 +550,26 @@ export default function AdminSendAlerts() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  Recipients ({selectedFarmers.length})
+                  Recipients ({filteredFarmers.length})
                 </CardTitle>
+                {/* <CardDescription>
+                  {farmers.filter(f => f.source === 'database').length} from database + {farmers.filter(f => f.source === 'hardcoded').length} demo
+                </CardDescription> */}
               </CardHeader>
               <CardContent>
                 <div className="max-h-64 overflow-y-auto space-y-2">
                   {filteredFarmers.map(farmer => (
-                    <div key={farmer.id} className="p-2 bg-gray-50 rounded-lg text-sm">
-                      <p className="font-medium">{farmer.name}</p>
-                      <p className="text-xs text-gray-600">{farmer.sector}, {farmer.district}</p>
-                      <p className="text-xs text-gray-500">{farmer.phone}</p>
+                    <div key={farmer.id} className="p-2 bg-gray-50 rounded-lg text-sm flex items-start justify-between">
+                      <div>
+                        <p className="font-medium">{farmer.name}</p>
+                        <p className="text-xs text-gray-600">{farmer.sector}, {farmer.district}</p>
+                        <p className="text-xs text-gray-500">{farmer.phone}</p>
+                      </div>
+                      {/* {farmer.source && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {farmer.source === 'database' ? '🔄 DB' : '📝 Demo'}
+                        </Badge>
+                      )} */}
                     </div>
                   ))}
                 </div>
@@ -501,10 +584,10 @@ export default function AdminSendAlerts() {
                   <div className="text-sm text-blue-800">
                     <p className="font-semibold mb-1">Important Notes:</p>
                     <ul className="space-y-1 text-xs">
-                      <li>• SMS messages will be sent immediately</li>
-                      <li>• Email delivery may take a few minutes</li>
-                      <li>• High priority alerts are highlighted</li>
-                      <li>• Farmers will receive notifications on their dashboard</li>
+                      <li>• SMS will be sent via Africa's Talking</li>
+                      <li>• Messages are sent immediately</li>
+                      <li>• All farmers (DB + hardcoded) will receive alerts</li>
+                      <li>• Check console for detailed sending status</li>
                     </ul>
                   </div>
                 </div>
