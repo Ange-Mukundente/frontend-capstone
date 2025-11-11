@@ -1,6 +1,6 @@
 // Use environment variable (works for both local and production)
 //const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://vetconnect-backend-3.onrender.com/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 // Remove or comment out the hardcoded one:
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://vetconnect-backend-3.onrender.com/api"
 
