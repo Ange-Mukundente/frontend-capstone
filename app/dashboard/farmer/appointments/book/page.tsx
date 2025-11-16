@@ -440,7 +440,7 @@ export default function BookAppointment() {
               <div className="lg:col-span-2">
                 <Card className="shadow-lg border-gray-200 overflow-hidden">
                   <CardContent className="p-0">
-                    <div className="relative h-[600px] bg-white">
+                    <div className="relative h-[600px] bg-white overflow-hidden">
                       {/* Embedded Google Maps-style iframe */}
                       <iframe
                         src="https://www.openstreetmap.org/export/embed.html?bbox=29.8%2C-2.0%2C30.8%2C-1.0&layer=mapnik&marker=-1.5%2C30.3"
@@ -450,6 +450,52 @@ export default function BookAppointment() {
                         loading="lazy"
                         title="Rwanda Veterinarians Map"
                       ></iframe>
+                      
+                      {/* Red dot markers overlay */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        {filteredVets.map((vet) => {
+                          // Convert lat/lng to approximate pixel positions
+                          // Map bounds: lng 29.8 to 30.8 (left to right), lat -2.0 to -1.0 (top to bottom)
+                          const mapWidth = 100; // percentage
+                          const mapHeight = 100; // percentage
+                          const lonMin = 29.8;
+                          const lonMax = 30.8;
+                          const latMin = -2.0;
+                          const latMax = -1.0;
+                          
+                          const x = ((vet.lng - lonMin) / (lonMax - lonMin)) * mapWidth;
+                          const y = ((latMax - vet.lat) / (latMax - latMin)) * mapHeight;
+                          
+                          return (
+                            <div
+                              key={vet.id}
+                              className="absolute pointer-events-auto cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-transform hover:scale-125 group"
+                              style={{
+                                left: `${x}%`,
+                                top: `${y}%`,
+                              }}
+                              onClick={() => handleSelectVet(vet)}
+                            >
+                              {/* Red dot */}
+                              <div className={`relative ${
+                                selectedVet?.id === vet.id ? 'animate-pulse' : ''
+                              }`}>
+                                <div className={`w-4 h-4 rounded-full shadow-lg ${
+                                  selectedVet?.id === vet.id
+                                    ? 'bg-green-500 ring-4 ring-green-200'
+                                    : 'bg-red-600 ring-2 ring-white'
+                                }`} />
+                                {/* Tooltip on hover */}
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block whitespace-nowrap z-10">
+                                  <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg">
+                                    {vet.name}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                       
                       {/* Overlay with vet markers */}
                       <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">

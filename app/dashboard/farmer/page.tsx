@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Calendar, Plus, Beef, Activity, AlertTriangle, Phone, FileText, Bell, Loader2 } from "lucide-react"
+import { Calendar, Plus, Beef, Activity, AlertTriangle, Phone, FileText, Bell, Loader2, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -17,15 +17,32 @@ export default function FarmerDashboard() {
   const [appointments, setAppointments] = useState<any[]>([])
   const [appointmentsCount, setAppointmentsCount] = useState(0)
   const [alertsCount, setAlertsCount] = useState(0)
+  const [isOffline, setIsOffline] = useState(false)
 
-  // Fetch all dashboard data from API
+  // Check online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false)
+    const handleOffline = () => setIsOffline(true)
+
+    setIsOffline(!navigator.onLine)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  // Fetch all dashboard data from API or localStorage
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem('token')
         const userStr = localStorage.getItem("user")
         
-        if (!token || !userStr || userStr === "undefined") {
+        if (!userStr || userStr === "undefined") {
           router.push("/auth/login")
           return
         }
@@ -33,70 +50,161 @@ export default function FarmerDashboard() {
         const userData = JSON.parse(userStr)
         setUser(userData)
 
-        // Fetch livestock from API
-        const livestockResponse = await fetch(`${BACKEND_URL}/api/livestock`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        // Try to fetch from API if online
+        if (navigator.onLine && token) {
+          try {
+            // Fetch livestock from API
+            const livestockResponse = await fetch(`${BACKEND_URL}/api/livestock`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            })
+            
+            const livestockData = await livestockResponse.json()
+            
+            if (livestockResponse.ok && livestockData.success) {
+              console.log('✅ Livestock loaded from API:', livestockData.data.length)
+              setLivestock(livestockData.data || [])
+              // Cache the data
+              localStorage.setItem('livestock_cache', JSON.stringify(livestockData.data || []))
+            } else {
+              throw new Error('Failed to load from API')
+            }
+
+            // Fetch appointments from API
+            const appointmentsResponse = await fetch(`${BACKEND_URL}/api/appointments`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            })
+            
+            const appointmentsData = await appointmentsResponse.json()
+            
+            if (appointmentsResponse.ok && appointmentsData.success) {
+              const allAppointments = appointmentsData.data || []
+              console.log('✅ Appointments loaded from API:', allAppointments.length)
+              setAppointments(allAppointments)
+              // Cache the data
+              localStorage.setItem('appointments_cache', JSON.stringify(allAppointments))
+              
+              // Count upcoming appointments (this week)
+              const today = new Date()
+              today.setHours(0, 0, 0, 0)
+              const weekFromNow = new Date(today)
+              weekFromNow.setDate(today.getDate() + 7)
+
+              const upcomingCount = allAppointments.filter((apt: any) => {
+                const aptDate = new Date(apt.date)
+                aptDate.setHours(0, 0, 0, 0)
+                return aptDate >= today && aptDate <= weekFromNow && 
+                       ['pending', 'confirmed'].includes(apt.status)
+              }).length
+
+              setAppointmentsCount(upcomingCount)
+            } else {
+              throw new Error('Failed to load from API')
+            }
+
+            setAlertsCount(0)
+          } catch (apiError) {
+            console.log('⚠️ API fetch failed, using cached data')
+            loadCachedData()
           }
-        })
-        
-        const livestockData = await livestockResponse.json()
-        
-        if (livestockResponse.ok && livestockData.success) {
-          console.log('✅ Livestock loaded:', livestockData.data.length)
-          setLivestock(livestockData.data || [])
         } else {
-          console.error('❌ Failed to load livestock:', livestockData.message)
-          setLivestock([])
+          // Load from cache when offline
+          console.log('📱 Offline mode - loading cached data')
+          loadCachedData()
         }
-
-        // Fetch appointments from API
-        const appointmentsResponse = await fetch(`${BACKEND_URL}/api/appointments`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
-        
-        const appointmentsData = await appointmentsResponse.json()
-        
-        if (appointmentsResponse.ok && appointmentsData.success) {
-          const allAppointments = appointmentsData.data || []
-          console.log('✅ Appointments loaded:', allAppointments.length)
-          setAppointments(allAppointments)
-          
-          // Count upcoming appointments (this week)
-          const today = new Date()
-          today.setHours(0, 0, 0, 0) // Reset to start of day
-          const weekFromNow = new Date(today)
-          weekFromNow.setDate(today.getDate() + 7)
-
-          const upcomingCount = allAppointments.filter((apt: any) => {
-            const aptDate = new Date(apt.date)
-            aptDate.setHours(0, 0, 0, 0) // Reset to start of day
-            return aptDate >= today && aptDate <= weekFromNow && 
-                   ['pending', 'confirmed'].includes(apt.status)
-          }).length
-
-          console.log('📅 Appointments this week:', upcomingCount)
-          setAppointmentsCount(upcomingCount)
-        } else {
-          console.error('❌ Failed to load appointments:', appointmentsData.message)
-          setAppointments([])
-        }
-
-        // Fetch alerts count (if you have an alerts endpoint)
-        // For now, we'll use a placeholder
-        setAlertsCount(0)
 
         setLoading(false)
       } catch (error) {
         console.error("❌ Error loading dashboard data:", error)
-        setLivestock([])
-        setAppointments([])
+        loadCachedData()
         setLoading(false)
       }
+    }
+
+    const loadCachedData = () => {
+      // Load livestock from cache
+      const cachedLivestock = localStorage.getItem('livestock_cache')
+      if (cachedLivestock && cachedLivestock !== 'undefined') {
+        try {
+          const parsedLivestock = JSON.parse(cachedLivestock)
+          setLivestock(parsedLivestock)
+          console.log('📦 Loaded cached livestock:', parsedLivestock.length)
+        } catch (e) {
+          console.error('Failed to parse cached livestock')
+          setLivestock([])
+        }
+      } else {
+        // Fallback to old localStorage key
+        const oldLivestock = localStorage.getItem('livestock')
+        if (oldLivestock && oldLivestock !== 'undefined') {
+          try {
+            const parsedLivestock = JSON.parse(oldLivestock)
+            setLivestock(parsedLivestock)
+          } catch (e) {
+            setLivestock([])
+          }
+        }
+      }
+
+      // Load appointments from cache
+      const cachedAppointments = localStorage.getItem('appointments_cache')
+      if (cachedAppointments && cachedAppointments !== 'undefined') {
+        try {
+          const parsedAppointments = JSON.parse(cachedAppointments)
+          setAppointments(parsedAppointments)
+          console.log('📦 Loaded cached appointments:', parsedAppointments.length)
+
+          // Count upcoming appointments
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          const weekFromNow = new Date(today)
+          weekFromNow.setDate(today.getDate() + 7)
+
+          const upcomingCount = parsedAppointments.filter((apt: any) => {
+            const aptDate = new Date(apt.date)
+            aptDate.setHours(0, 0, 0, 0)
+            return aptDate >= today && aptDate <= weekFromNow && 
+                   ['pending', 'confirmed'].includes(apt.status)
+          }).length
+
+          setAppointmentsCount(upcomingCount)
+        } catch (e) {
+          console.error('Failed to parse cached appointments')
+          setAppointments([])
+        }
+      } else {
+        // Fallback to old localStorage key
+        const oldAppointments = localStorage.getItem('appointments')
+        if (oldAppointments && oldAppointments !== 'undefined') {
+          try {
+            const parsedAppointments = JSON.parse(oldAppointments)
+            setAppointments(parsedAppointments)
+
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            const weekFromNow = new Date(today)
+            weekFromNow.setDate(today.getDate() + 7)
+
+            const upcomingCount = parsedAppointments.filter((apt: any) => {
+              const aptDate = new Date(apt.date)
+              aptDate.setHours(0, 0, 0, 0)
+              return aptDate >= today && aptDate <= weekFromNow && 
+                     ['pending', 'confirmed'].includes(apt.status)
+            }).length
+
+            setAppointmentsCount(upcomingCount)
+          } catch (e) {
+            setAppointments([])
+          }
+        }
+      }
+
+      setAlertsCount(0)
     }
 
     fetchDashboardData()
@@ -151,6 +259,23 @@ export default function FarmerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Offline Banner */}
+        {isOffline && (
+          <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+            <div className="flex items-center">
+              <WifiOff className="w-5 h-5 text-yellow-600 mr-3" />
+              <div>
+                <p className="text-sm font-medium text-yellow-800">
+                  You're currently offline
+                </p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Viewing cached data. Some features may be limited.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome back, {farmerName}!</h1>
@@ -223,7 +348,11 @@ export default function FarmerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Button className="w-full justify-start bg-green-600 hover:bg-green-700" onClick={() => router.push('/dashboard/farmer/appointments/book')}>
+                  <Button 
+                    className="w-full justify-start bg-green-600 hover:bg-green-700" 
+                    onClick={() => router.push('/dashboard/farmer/appointments/book')}
+                    disabled={isOffline}
+                  >
                     <Calendar className="mr-2 h-4 w-4" /> Book Appointment
                   </Button>
                   <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/livestock')}>
@@ -252,14 +381,18 @@ export default function FarmerDashboard() {
                 {recentAppointments.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-gray-600 mb-4">No upcoming appointments</p>
-                    <Button className="bg-green-600 hover:bg-green-700" onClick={() => router.push('/dashboard/farmer/appointments/book')}>
+                    <Button 
+                      className="bg-green-600 hover:bg-green-700" 
+                      onClick={() => router.push('/dashboard/farmer/appointments/book')}
+                      disabled={isOffline}
+                    >
                       <Calendar className="w-4 h-4 mr-2" /> Book Your First Appointment
                     </Button>
                   </div>
                 ) : (
                   <>
                     {recentAppointments.map((apt: any) => (
-                      <div key={apt._id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div key={apt._id || apt.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-semibold">{apt.vetName}</h4>

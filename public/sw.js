@@ -1,1 +1,266 @@
-if(!self.define){let e,a={};const s=(s,i)=>(s=new URL(s+".js",i).href,a[s]||new Promise(a=>{if("document"in self){const e=document.createElement("script");e.src=s,e.onload=a,document.head.appendChild(e)}else e=s,importScripts(s),a()}).then(()=>{let e=a[s];if(!e)throw new Error(`Module ${s} didn’t register its module`);return e}));self.define=(i,n)=>{const t=e||("document"in self?document.currentScript.src:"")||location.href;if(a[t])return;let r={};const c=e=>s(e,t),f={module:{uri:t},exports:r,require:c};a[t]=Promise.all(i.map(e=>f[e]||c(e))).then(e=>(n(...e),r))}}define(["./workbox-14aa2a4a"],function(e){"use strict";importScripts(),self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"/_next/app-build-manifest.json",revision:"5060660f1ffd1fc7acf59ad55dddfcf9"},{url:"/_next/static/chunks/117-b153ee776fe2c4d9.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/203-6edafb44967933db.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/418-c2acdce5411c9111.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/51-9d97da34ac8533a6.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/553-f0104961fc80df20.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/783-599417b479521458.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/878-0d65050cb5096d59.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/940-4525ab6c32c1fcd5.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/972-edd2ee9795e590ec.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/_not-found/page-ee14ed0d49d5b571.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/about/page-606bf9c11a1dc74a.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/auth/forgot-password/page-3eba8ff870ccfb5a.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/auth/login/page-3b19531ae9341814.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/auth/register/page-84e6a7e41f058bea.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/contact/page-d8a817259df016ac.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/admin/alerts-history/page-c753c09c58267f23.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/admin/farmers/page-3b1542dca946e253.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/admin/page-e67eaa53b49aad8a.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/admin/reports/page-51a406de88a590c1.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/admin/send-alerts/page-e6eef13c8da8fa0d.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/admin/veterinarians/page-b799850744edb2df.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/farmer/alerts/page-9c9e67b27a7d8507.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/farmer/appointments/book/page-54cf1103818afb87.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/farmer/appointments/page-2f1cadec7e632b10.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/farmer/contact-vet/page-3ff45c508b04bff6.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/farmer/health-records/page-ff85e8d8ed5ff65d.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/farmer/help/page-f2b47c9140f0e624.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/farmer/livestock/page-10ff9ffcc4ca9451.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/farmer/page-d966279f49cd6d21.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/farmer/reports/page-5a02d7050dc945fc.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/veterinarian/appointments/page-b6be431939a6c6a6.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/veterinarian/appointments/report/page-b8752d1d82bb0221.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/veterinarian/help/page-d83cc3867a2b57c4.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/veterinarian/messages/page-16500a709bb92b8d.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/veterinarian/page-d73d6129de30c8fc.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/veterinarian/patients/page-2b92714742ed90c3.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/dashboard/veterinarian/schedule/page-565621446eea27b3.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/layout-a7710c4c9cb8553c.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/offline/page-ed527c4f67d153e5.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/app/page-92652a325545dae1.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/fd9d1056-b88f8a4cc02eef8b.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/framework-f66176bb897dc684.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/main-app-47a129d13d11c4d0.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/main-eaf590a5117d0183.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/pages/_app-72b849fbd24ac258.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/pages/_error-7ba65e1336b92748.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/chunks/polyfills-42372ed130431b0a.js",revision:"846118c33b2c0e922d7b3a7676f81f6f"},{url:"/_next/static/chunks/webpack-3544375f4e07347a.js",revision:"fS7x7SSshGZaiRLfXk8wq"},{url:"/_next/static/css/882efad1cfbe4ccd.css",revision:"882efad1cfbe4ccd"},{url:"/_next/static/fS7x7SSshGZaiRLfXk8wq/_buildManifest.js",revision:"c155cce658e53418dec34664328b51ac"},{url:"/_next/static/fS7x7SSshGZaiRLfXk8wq/_ssgManifest.js",revision:"b6652df95db52feb4daf4eca35380933"},{url:"/_next/static/media/19cfc7226ec3afaa-s.woff2",revision:"9dda5cfc9a46f256d0e131bb535e46f8"},{url:"/_next/static/media/21350d82a1f187e9-s.woff2",revision:"4e2553027f1d60eff32898367dd4d541"},{url:"/_next/static/media/8e9860b6e62d6359-s.woff2",revision:"01ba6c2a184b8cba08b0d57167664d75"},{url:"/_next/static/media/ba9851c3c22cd980-s.woff2",revision:"9e494903d6b0ffec1a1e14d34427d44d"},{url:"/_next/static/media/c5fe6dc8356a8c31-s.woff2",revision:"027a89e9ab733a145db70f09b8a18b42"},{url:"/_next/static/media/df0a9ae256c0569c-s.woff2",revision:"d54db44de5ccb18886ece2fda72bdfe0"},{url:"/_next/static/media/e4af272ccee01ff0-s.p.woff2",revision:"65850a373e258f1c897a2b3d75eb74de"},{url:"/_next/static/media/layers-2x.9859cd12.png",revision:"9859cd12"},{url:"/_next/static/media/layers.ef6db872.png",revision:"ef6db872"},{url:"/_next/static/media/marker-icon.d577052a.png",revision:"d577052a"},{url:"/african-farmer-with-cattle-in-rwanda-countryside.jpg",revision:"c5880543e4dd128121602386ae45b783"},{url:"/favicon.ico",revision:"c30c7d42707a47a3f4591831641e50dc"},{url:"/file.svg",revision:"d09f95206c3fa0bb9bd9fefabfd0ea71"},{url:"/globe.svg",revision:"2aaafa6a49b6563925fe440891e32717"},{url:"/icon-192x192.png",revision:"9313f7e6326b574b4ae89231d5f48260"},{url:"/icon-512x512.png",revision:"fbab8b67d1af0167b569a38e7138c226"},{url:"/manifest.json",revision:"a6e12410e78d4cf67b94e0118cd21abf"},{url:"/next.svg",revision:"8e061864f388b47f33a1c3780831193e"},{url:"/rwandan-veterinarian-examining-cattle-in-rural-set.jpg",revision:"6d62e79660b9884c49697cfb797c880b"},{url:"/vercel.svg",revision:"c0af2f507b369b085b35ef4bbe3bcf1e"},{url:"/window.svg",revision:"a2760511c65806022ad20adf74370ff3"}],{ignoreURLParametersMatching:[]}),e.cleanupOutdatedCaches(),e.registerRoute("/",new e.NetworkFirst({cacheName:"start-url",plugins:[{cacheWillUpdate:async({request:e,response:a,event:s,state:i})=>a&&"opaqueredirect"===a.type?new Response(a.body,{status:200,statusText:"OK",headers:a.headers}):a}]}),"GET"),e.registerRoute(/^https:\/\/vetconnect-backend-3\.onrender\.com\/api\/.*/i,new e.NetworkFirst({cacheName:"api-cache",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:50,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:png|jpg|jpeg|svg|gif|webp)$/i,new e.CacheFirst({cacheName:"image-cache",plugins:[new e.ExpirationPlugin({maxEntries:100,maxAgeSeconds:2592e3})]}),"GET"),e.registerRoute(/\.(?:js|css)$/i,new e.StaleWhileRevalidate({cacheName:"static-resources",plugins:[new e.ExpirationPlugin({maxEntries:60,maxAgeSeconds:2592e3})]}),"GET")});
+// Service Worker for VetConnect - Offline Support
+const CACHE_NAME = 'vetconnect-v1'
+const API_CACHE_NAME = 'vetconnect-api-v1'
+
+// Critical files to cache for offline functionality
+const STATIC_ASSETS = [
+  '/',
+  '/dashboard/farmer',
+  '/dashboard/farmer/livestock',
+  '/dashboard/farmer/appointments',
+  '/dashboard/farmer/appointments/book',
+  '/offline',
+  '/manifest.json'
+]
+
+// Install event - cache static assets
+self.addEventListener('install', (event) => {
+  console.log('Service Worker installing...')
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Opened cache')
+      return cache.addAll(STATIC_ASSETS).catch(err => {
+        console.error('Failed to cache:', err)
+        // Don't fail the install if caching fails
+        return Promise.resolve()
+      })
+    }).then(() => {
+      // Force the waiting service worker to become the active service worker
+      return self.skipWaiting()
+    })
+  )
+})
+
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker activating...')
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName)
+            return caches.delete(cacheName)
+          }
+        })
+      )
+    }).then(() => {
+      // Take control of all pages immediately
+      return self.clients.claim()
+    })
+  )
+})
+
+// Fetch event - serve from cache when offline, or fetch from network
+self.addEventListener('fetch', (event) => {
+  const { request } = event
+  const url = new URL(request.url)
+
+  // Handle API requests
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Clone the response before caching
+          const responseToCache = response.clone()
+          
+          // Cache successful API responses
+          if (response.ok) {
+            caches.open(API_CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache)
+            })
+          }
+          
+          return response
+        })
+        .catch(() => {
+          // If fetch fails, try to return cached response
+          return caches.match(request).then((cachedResponse) => {
+            if (cachedResponse) {
+              console.log('Serving API from cache:', request.url)
+              return cachedResponse
+            }
+            
+            // Return a generic error response
+            return new Response(
+              JSON.stringify({ 
+                success: false, 
+                message: 'Offline - no cached data available',
+                offline: true 
+              }),
+              {
+                status: 503,
+                headers: { 'Content-Type': 'application/json' }
+              }
+            )
+          })
+        })
+    )
+    return
+  }
+
+  // Handle navigation requests (HTML pages)
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Cache the page
+          const responseToCache = response.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseToCache)
+          })
+          return response
+        })
+        .catch(() => {
+          // If offline, try to serve from cache
+          return caches.match(request).then((cachedResponse) => {
+            if (cachedResponse) {
+              console.log('Serving page from cache:', request.url)
+              return cachedResponse
+            }
+            
+            // If no cache, redirect to offline page
+            return caches.match('/offline').then((offlinePage) => {
+              return offlinePage || new Response('Offline', { status: 503 })
+            })
+          })
+        })
+    )
+    return
+  }
+
+  // Handle all other requests (CSS, JS, images, etc.)
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        // Serve from cache, but also update cache in background
+        fetch(request)
+          .then((response) => {
+            if (response.ok) {
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(request, response.clone())
+              })
+            }
+          })
+          .catch(() => {
+            // Network fetch failed, but we already have cached version
+          })
+        
+        return cachedResponse
+      }
+
+      // Not in cache, fetch from network
+      return fetch(request)
+        .then((response) => {
+          // Cache successful responses
+          if (response.ok) {
+            const responseToCache = response.clone()
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache)
+            })
+          }
+          return response
+        })
+        .catch((error) => {
+          console.error('Fetch failed:', error)
+          
+          // For images, return a placeholder
+          if (request.destination === 'image') {
+            return new Response(
+              '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#ddd"/><text x="50%" y="50%" text-anchor="middle" fill="#999">Offline</text></svg>',
+              { headers: { 'Content-Type': 'image/svg+xml' } }
+            )
+          }
+          
+          throw error
+        })
+    })
+  )
+})
+
+// Handle background sync for queued requests
+self.addEventListener('sync', (event) => {
+  console.log('Background sync triggered:', event.tag)
+  
+  if (event.tag === 'sync-appointments') {
+    event.waitUntil(syncAppointments())
+  }
+  
+  if (event.tag === 'sync-livestock') {
+    event.waitUntil(syncLivestock())
+  }
+})
+
+// Sync queued appointments when back online
+async function syncAppointments() {
+  try {
+    const cache = await caches.open('pending-requests')
+    const requests = await cache.keys()
+    
+    for (const request of requests) {
+      if (request.url.includes('/api/appointments')) {
+        try {
+          await fetch(request.clone())
+          await cache.delete(request)
+          console.log('Synced appointment:', request.url)
+        } catch (error) {
+          console.error('Failed to sync appointment:', error)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Sync appointments failed:', error)
+  }
+}
+
+// Sync queued livestock when back online
+async function syncLivestock() {
+  try {
+    const cache = await caches.open('pending-requests')
+    const requests = await cache.keys()
+    
+    for (const request of requests) {
+      if (request.url.includes('/api/livestock')) {
+        try {
+          await fetch(request.clone())
+          await cache.delete(request)
+          console.log('Synced livestock:', request.url)
+        } catch (error) {
+          console.error('Failed to sync livestock:', error)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Sync livestock failed:', error)
+  }
+}
+
+// Handle push notifications
+self.addEventListener('push', (event) => {
+  console.log('Push notification received:', event)
+  
+  const options = {
+    body: event.data ? event.data.text() : 'New notification from VetConnect',
+    icon: '/icon-192x192.png',
+    badge: '/icon-72x72.png',
+    vibrate: [200, 100, 200],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    }
+  }
+  
+  event.waitUntil(
+    self.registration.showNotification('VetConnect', options)
+  )
+})
+
+// Handle notification clicks
+self.addEventListener('notificationclick', (event) => {
+  console.log('Notification clicked:', event)
+  event.notification.close()
+  
+  event.waitUntil(
+    clients.openWindow('/dashboard/farmer')
+  )
+})
