@@ -285,6 +285,8 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 <div align="center">
 
+video link: https://www.loom.com/share/f9c6796db0594189a2682a27f68761ad
+
 Author: Ange Mukundente<angemukundente@gmail.com>
 
 </div>

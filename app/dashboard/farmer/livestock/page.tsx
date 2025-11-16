@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, AlertCircle, CheckCircle, ArrowLeft, Loader2 } from "lucide-react"
+import { Plus, Edit, Trash2, AlertCircle, CheckCircle, ArrowLeft, Loader2, WifiOff, Wifi, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,7 +13,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
+// Offline storage keys
+const STORAGE_KEYS = {
+  LIVESTOCK: 'farmer_livestock_offline',
+  PENDING_ACTIONS: 'farmer_livestock_pending_actions',
+  LAST_SYNC: 'farmer_livestock_last_sync',
+}
 
 type Livestock = {
   _id?: string
@@ -26,6 +33,14 @@ type Livestock = {
   healthStatus: string
   lastCheckup: string
   notes: string
+  isLocalOnly?: boolean // Flag for offline-created items
+}
+
+type PendingAction = {
+  id: string
+  action: 'add' | 'update' | 'delete'
+  data: Livestock
+  timestamp: number
 }
 
 export default function LivestockManagement() {
@@ -37,6 +52,11 @@ export default function LivestockManagement() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
   const [selectedLivestock, setSelectedLivestock] = useState<Livestock | null>(null)
+  const [isOnline, setIsOnline] = useState(true)
+  const [lastSync, setLastSync] = useState<Date | null>(null)
+  const [pendingActions, setPendingActions] = useState<PendingAction[]>([])
+  const [syncing, setSyncing] = useState(false)
+  
   const [formData, setFormData] = useState({
     name: "",
     type: "Cattle",
@@ -51,6 +71,167 @@ export default function LivestockManagement() {
   const itemsPerPage = 10
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState("All")
+
+  // Monitor online/offline status
+  useEffect(() => {
+    const updateOnlineStatus = () => {
+      const online = navigator.onLine
+      setIsOnline(online)
+      console.log(online ? '🟢 Online' : '🔴 Offline')
+      
+      if (online && !isOnline) {
+        console.log('🔄 Connection restored, syncing...')
+        syncPendingActions()
+        fetchLivestock()
+      }
+    }
+
+    setIsOnline(navigator.onLine)
+    window.addEventListener('online', updateOnlineStatus)
+    window.addEventListener('offline', updateOnlineStatus)
+
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus)
+      window.removeEventListener('offline', updateOnlineStatus)
+    }
+  }, [isOnline])
+
+  // Load offline data
+  const loadOfflineData = () => {
+    try {
+      const storedLivestock = localStorage.getItem(STORAGE_KEYS.LIVESTOCK)
+      const storedPending = localStorage.getItem(STORAGE_KEYS.PENDING_ACTIONS)
+      const storedLastSync = localStorage.getItem(STORAGE_KEYS.LAST_SYNC)
+
+      if (storedLivestock) {
+        const livestockData = JSON.parse(storedLivestock)
+        setLivestock(livestockData)
+        console.log('📦 Loaded livestock from offline storage:', livestockData.length)
+      }
+
+      if (storedPending) {
+        const pendingData = JSON.parse(storedPending)
+        setPendingActions(pendingData)
+        console.log('⏳ Pending actions:', pendingData.length)
+      }
+
+      if (storedLastSync) {
+        setLastSync(new Date(storedLastSync))
+      }
+
+      return true
+    } catch (error) {
+      console.error('❌ Error loading offline data:', error)
+      return false
+    }
+  }
+
+  // Save offline data
+  const saveOfflineData = (livestockData: Livestock[], pendingData?: PendingAction[]) => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.LIVESTOCK, JSON.stringify(livestockData))
+      if (pendingData !== undefined) {
+        localStorage.setItem(STORAGE_KEYS.PENDING_ACTIONS, JSON.stringify(pendingData))
+      }
+      localStorage.setItem(STORAGE_KEYS.LAST_SYNC, new Date().toISOString())
+      setLastSync(new Date())
+      console.log('💾 Data saved to offline storage')
+    } catch (error) {
+      console.error('❌ Error saving offline data:', error)
+    }
+  }
+
+  // Add pending action
+  const addPendingAction = (action: 'add' | 'update' | 'delete', data: Livestock) => {
+    const newAction: PendingAction = {
+      id: Date.now().toString(),
+      action,
+      data,
+      timestamp: Date.now()
+    }
+    const updated = [...pendingActions, newAction]
+    setPendingActions(updated)
+    saveOfflineData(livestock, updated)
+  }
+
+  // Sync pending actions
+  const syncPendingActions = async () => {
+    if (pendingActions.length === 0 || !navigator.onLine) return
+
+    setSyncing(true)
+    console.log(`🔄 Syncing ${pendingActions.length} pending actions...`)
+
+    const token = localStorage.getItem('token')
+    const successfulActions: string[] = []
+
+    for (const action of pendingActions) {
+      try {
+        if (action.action === 'add') {
+          const response = await fetch(`${BACKEND_URL}/api/livestock`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              ...action.data,
+              lastCheckup: new Date().toISOString()
+            })
+          })
+
+          if (response.ok) {
+            successfulActions.push(action.id)
+            console.log(`✅ Synced ADD: ${action.data.name}`)
+          }
+        } else if (action.action === 'update') {
+          const livestockId = action.data._id || action.data.id
+          const response = await fetch(`${BACKEND_URL}/api/livestock/${livestockId}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(action.data)
+          })
+
+          if (response.ok) {
+            successfulActions.push(action.id)
+            console.log(`✅ Synced UPDATE: ${action.data.name}`)
+          }
+        } else if (action.action === 'delete') {
+          const livestockId = action.data._id || action.data.id
+          const response = await fetch(`${BACKEND_URL}/api/livestock/${livestockId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+
+          if (response.ok) {
+            successfulActions.push(action.id)
+            console.log(`✅ Synced DELETE: ${action.data.name}`)
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Failed to sync ${action.action}:`, error)
+      }
+    }
+
+    // Remove successful actions
+    const remaining = pendingActions.filter(a => !successfulActions.includes(a.id))
+    setPendingActions(remaining)
+    saveOfflineData(livestock, remaining)
+
+    if (successfulActions.length > 0) {
+      toast({
+        title: "✅ Sync Complete",
+        description: `Synced ${successfulActions.length} changes`,
+      })
+    }
+
+    setSyncing(false)
+  }
 
   // Fetch livestock from backend
   const fetchLivestock = async () => {
@@ -68,6 +249,15 @@ export default function LivestockManagement() {
         return
       }
 
+      if (!navigator.onLine) {
+        console.log('🔴 Offline mode - Loading cached data')
+        loadOfflineData()
+        setLoading(false)
+        return
+      }
+
+      console.log('🟢 Online mode - Fetching fresh data')
+
       const response = await fetch(`${BACKEND_URL}/api/livestock`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -78,17 +268,24 @@ export default function LivestockManagement() {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        setLivestock(data.data || [])
+        const livestockData = data.data || []
+        setLivestock(livestockData)
+        saveOfflineData(livestockData, pendingActions)
+        console.log('✅ Livestock loaded:', livestockData.length)
       } else {
         throw new Error(data.message || 'Failed to fetch livestock')
       }
     } catch (error) {
       console.error('Fetch livestock error:', error)
-      toast({
-        title: "❌ Error",
-        description: error instanceof Error ? error.message : "Failed to fetch livestock",
-        variant: "destructive"
-      })
+      console.log('⚠️ Falling back to offline storage')
+      loadOfflineData()
+      
+      if (navigator.onLine) {
+        toast({
+          title: "⚠️ Using Cached Data",
+          description: "Couldn't fetch latest data. Showing offline version.",
+        })
+      }
     } finally {
       setLoading(false)
     }
@@ -103,7 +300,7 @@ export default function LivestockManagement() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  // Add livestock to backend
+  // Add livestock
   const handleAddLivestock = async () => {
     if (!formData.name.trim()) {
       toast({
@@ -114,18 +311,31 @@ export default function LivestockManagement() {
       return
     }
 
+    const newLivestock: Livestock = {
+      id: `local_${Date.now()}`,
+      ...formData,
+      lastCheckup: new Date().toISOString(),
+      isLocalOnly: !navigator.onLine
+    }
+
+    if (!navigator.onLine) {
+      // Offline: Add to local state and queue
+      const updated = [newLivestock, ...livestock]
+      setLivestock(updated)
+      addPendingAction('add', newLivestock)
+      
+      toast({
+        title: "📝 Saved Offline",
+        description: `${formData.name} will be synced when online`,
+      })
+      
+      setIsAddModalOpen(false)
+      resetForm()
+      return
+    }
+
     try {
       const token = localStorage.getItem('token')
-      
-      if (!token) {
-        toast({
-          title: "❌ Authentication Error",
-          description: "Please login again",
-          variant: "destructive"
-        })
-        router.push('/auth/login')
-        return
-      }
 
       const response = await fetch(`${BACKEND_URL}/api/livestock`, {
         method: 'POST',
@@ -149,17 +359,26 @@ export default function LivestockManagement() {
         
         setIsAddModalOpen(false)
         resetForm()
-        fetchLivestock() // Refresh the list
+        fetchLivestock()
       } else {
         throw new Error(data.message || 'Failed to add livestock')
       }
     } catch (error) {
       console.error('Add livestock error:', error)
+      
+      // Fallback to offline mode
+      const updated = [newLivestock, ...livestock]
+      setLivestock(updated)
+      addPendingAction('add', newLivestock)
+      saveOfflineData(updated, pendingActions)
+      
       toast({
-        title: "❌ Error",
-        description: error instanceof Error ? error.message : "Failed to add livestock",
-        variant: "destructive"
+        title: "📝 Saved Offline",
+        description: `${formData.name} will be synced when online`,
       })
+      
+      setIsAddModalOpen(false)
+      resetForm()
     }
   }
 
@@ -177,18 +396,32 @@ export default function LivestockManagement() {
     setIsUpdateModalOpen(true)
   }
 
-  // Update livestock in backend
+  // Update livestock
   const handleUpdateLivestock = async () => {
-    if (!formData.name.trim()) {
-      toast({
-        title: "❌ Validation Error",
-        description: "Please enter livestock name",
-        variant: "destructive"
-      })
-      return
+    if (!formData.name.trim() || !selectedLivestock) return
+
+    const updatedLivestock = {
+      ...selectedLivestock,
+      ...formData
     }
 
-    if (!selectedLivestock) return
+    if (!navigator.onLine) {
+      // Offline: Update local state and queue
+      const updated = livestock.map(a => 
+        (a._id || a.id) === (selectedLivestock._id || selectedLivestock.id) ? updatedLivestock : a
+      )
+      setLivestock(updated)
+      addPendingAction('update', updatedLivestock)
+      
+      toast({
+        title: "📝 Updated Offline",
+        description: `Changes will be synced when online`,
+      })
+      
+      setIsUpdateModalOpen(false)
+      resetForm()
+      return
+    }
 
     try {
       const token = localStorage.getItem('token')
@@ -213,26 +446,49 @@ export default function LivestockManagement() {
         
         setIsUpdateModalOpen(false)
         resetForm()
-        fetchLivestock() // Refresh the list
+        fetchLivestock()
       } else {
         throw new Error(data.message || 'Failed to update livestock')
       }
     } catch (error) {
       console.error('Update livestock error:', error)
+      
+      // Fallback to offline
+      const updated = livestock.map(a => 
+        (a._id || a.id) === (selectedLivestock._id || selectedLivestock.id) ? updatedLivestock : a
+      )
+      setLivestock(updated)
+      addPendingAction('update', updatedLivestock)
+      saveOfflineData(updated, pendingActions)
+      
       toast({
-        title: "❌ Error",
-        description: error instanceof Error ? error.message : "Failed to update livestock",
-        variant: "destructive"
+        title: "📝 Updated Offline",
+        description: `Changes will be synced when online`,
       })
+      
+      setIsUpdateModalOpen(false)
+      resetForm()
     }
   }
 
-  // Delete livestock from backend
+  // Delete livestock
   const handleDeleteLivestock = async (animal: Livestock) => {
-    const livestockId = animal._id || animal.id
+    if (!navigator.onLine) {
+      // Offline: Remove from local state and queue
+      const updated = livestock.filter(a => (a._id || a.id) !== (animal._id || animal.id))
+      setLivestock(updated)
+      addPendingAction('delete', animal)
+      
+      toast({
+        title: "🗑️ Deleted Offline",
+        description: `Will be removed from server when online`,
+      })
+      return
+    }
 
     try {
       const token = localStorage.getItem('token')
+      const livestockId = animal._id || animal.id
 
       const response = await fetch(`${BACKEND_URL}/api/livestock/${livestockId}`, {
         method: 'DELETE',
@@ -250,16 +506,22 @@ export default function LivestockManagement() {
           description: `${animal.name} has been removed.`,
         })
         
-        fetchLivestock() // Refresh the list
+        fetchLivestock()
       } else {
         throw new Error(data.message || 'Failed to delete livestock')
       }
     } catch (error) {
       console.error('Delete livestock error:', error)
+      
+      // Fallback to offline
+      const updated = livestock.filter(a => (a._id || a.id) !== (animal._id || animal.id))
+      setLivestock(updated)
+      addPendingAction('delete', animal)
+      saveOfflineData(updated, pendingActions)
+      
       toast({
-        title: "❌ Error",
-        description: error instanceof Error ? error.message : "Failed to delete livestock",
-        variant: "destructive"
+        title: "🗑️ Deleted Offline",
+        description: `Will be removed from server when online`,
       })
     }
   }
@@ -292,6 +554,19 @@ export default function LivestockManagement() {
     }
   }
 
+  const formatLastSync = () => {
+    if (!lastSync) return 'Never'
+    const now = new Date()
+    const diff = now.getTime() - lastSync.getTime()
+    const minutes = Math.floor(diff / 60000)
+    
+    if (minutes < 1) return 'Just now'
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    return lastSync.toLocaleDateString()
+  }
+
   const filteredLivestock = livestock.filter((animal) => {
     const matchesSearch =
       animal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -322,6 +597,58 @@ export default function LivestockManagement() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Offline/Online Indicator */}
+        {!isOnline && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-3">
+            <WifiOff className="h-5 w-5 text-yellow-600" />
+            <div className="flex-1">
+              <p className="font-medium text-yellow-800">You're offline</p>
+              <p className="text-sm text-yellow-600">Changes will sync when connection is restored • Last synced {formatLastSync()}</p>
+            </div>
+            {pendingActions.length > 0 && (
+              <Badge variant="outline" className="bg-yellow-100">
+                <Clock className="w-3 h-3 mr-1" />
+                {pendingActions.length} pending
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {isOnline && (pendingActions.length > 0 || syncing) && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {syncing ? (
+                <>
+                  <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                  <p className="text-sm text-blue-800">Syncing {pendingActions.length} changes...</p>
+                </>
+              ) : (
+                <>
+                  <Wifi className="h-4 w-4 text-blue-600" />
+                  <p className="text-sm text-blue-800">{pendingActions.length} changes ready to sync</p>
+                </>
+              )}
+            </div>
+            {!syncing && (
+              <Button size="sm" variant="outline" onClick={syncPendingActions} className="text-blue-600 border-blue-300">
+                Sync Now
+              </Button>
+            )}
+          </div>
+        )}
+
+        {isOnline && lastSync && pendingActions.length === 0 && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wifi className="h-4 w-4 text-green-600" />
+              <p className="text-sm text-green-800">Connected - Last synced {formatLastSync()}</p>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => { setLoading(true); fetchLivestock(); }} className="text-green-600 border-green-300">
+              Sync Now
+            </Button>
+          </div>
+        )}
+
         {/* Header with Back Button */}
         <div className="flex items-center gap-4 mb-4">
           <Button 
@@ -411,8 +738,11 @@ export default function LivestockManagement() {
                 </TableHeader>
                 <TableBody>
                   {currentAnimals.map((animal) => (
-                    <TableRow key={animal._id || animal.id}>
-                      <TableCell className="font-medium">{animal.name}</TableCell>
+                    <TableRow key={animal._id || animal.id} className={animal.isLocalOnly ? 'bg-yellow-50' : ''}>
+                      <TableCell className="font-medium">
+                        {animal.name}
+                        {animal.isLocalOnly && <Badge variant="outline" className="ml-2 text-xs">Offline</Badge>}
+                      </TableCell>
                       <TableCell>{animal.type}</TableCell>
                       <TableCell>{animal.breed || '-'}</TableCell>
                       <TableCell>{animal.age || '-'}</TableCell>
@@ -483,7 +813,7 @@ export default function LivestockManagement() {
           </>
         )}
 
-        {/* Add Livestock Modal */}
+        {/* Add & Update Modals remain the same */}
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
