@@ -13,94 +13,92 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useToast } from "@/hooks/use-toast"
 
 interface Farmer {
-  id: number
+  _id: string
   name: string
   email: string
   phone: string
   district: string
   sector: string
-  livestock: number
-  joinedDate: string
-  status: "active" | "inactive"
+  role: string
+  createdAt: string
+  updatedAt: string
 }
 
 export default function ManageFarmers() {
   const router = useRouter()
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState("all")
   const [selectedFarmer, setSelectedFarmer] = useState<Farmer | null>(null)
   const [showDetails, setShowDetails] = useState(false)
+  const [farmers, setFarmers] = useState<Farmer[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Demo farmers data
-  const [farmers, setFarmers] = useState<Farmer[]>([
-    {
-      id: 1,
-      name: "Mary Uwase",
-      email: "mary@example.com",
-      phone: "+250 788 123 456",
-      district: "Kigali",
-      sector: "Gasabo",
-      livestock: 5,
-      joinedDate: "2024-01-15",
-      status: "active"
-    },
-    {
-      id: 2,
-      name: "John Mugisha",
-      email: "john@example.com",
-      phone: "+250 788 234 567",
-      district: "Nyagatare",
-      sector: "Karama",
-      livestock: 8,
-      joinedDate: "2024-02-20",
-      status: "active"
-    },
-    {
-      id: 3,
-      name: "Jean Kamanzi",
-      email: "jean@example.com",
-      phone: "+250 788 345 678",
-      district: "Gatsibo",
-      sector: "Kiramuruzi",
-      livestock: 3,
-      joinedDate: "2024-03-10",
-      status: "active"
-    },
-    {
-      id: 4,
-      name: "Alice Mukasine",
-      email: "alice@example.com",
-      phone: "+250 788 456 789",
-      district: "Kigali",
-      sector: "Kicukiro",
-      livestock: 6,
-      joinedDate: "2024-04-05",
-      status: "active"
-    },
-    {
-      id: 5,
-      name: "Peter Habimana",
-      email: "peter@example.com",
-      phone: "+250 788 567 890",
-      district: "Nyagatare",
-      sector: "Rukomo",
-      livestock: 4,
-      joinedDate: "2024-05-12",
-      status: "inactive"
-    },
-  ])
+  useEffect(() => {
+    fetchFarmers()
+  }, [])
+
+  const fetchFarmers = async () => {
+    try {
+      setLoading(true)
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to view farmers",
+          variant: "destructive"
+        })
+        router.push('/login')
+        return
+      }
+
+      console.log('🔍 Fetching farmers from:', `${process.env.NEXT_PUBLIC_API_URL}/api/admin/farmers`)
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/farmers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      console.log('📡 Response status:', response.status)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('❌ Error response:', errorData)
+        throw new Error(errorData.message || 'Failed to fetch farmers')
+      }
+
+      const data = await response.json()
+      console.log('✅ Farmers data received:', data)
+      console.log('📊 Total farmers:', data.count)
+      
+      if (data.success) {
+        setFarmers(data.data)
+      }
+    } catch (error: any) {
+      console.error('❌ Fetch farmers error:', error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch farmers",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredFarmers = farmers.filter(farmer => {
     const matchesSearch = 
       farmer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       farmer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      farmer.district.toLowerCase().includes(searchTerm.toLowerCase())
+      farmer.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      farmer.sector?.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesStatus = filterStatus === "all" || farmer.status === filterStatus
-
-    return matchesSearch && matchesStatus
+    return matchesSearch
   })
 
   const handleViewDetails = (farmer: Farmer) => {
@@ -108,15 +106,57 @@ export default function ManageFarmers() {
     setShowDetails(true)
   }
 
-  const handleDelete = (farmerId: number) => {
-    if (confirm("Are you sure you want to delete this farmer?")) {
-      setFarmers(farmers.filter(f => f.id !== farmerId))
+  const handleDelete = async (farmerId: string, farmerName: string) => {
+    if (!confirm(`Are you sure you want to delete ${farmerName}?`)) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('token')
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/farmers/${farmerId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete farmer')
+      }
+
+      toast({
+        title: "Success",
+        description: `${farmerName} has been deleted`,
+      })
+
+      // Refresh the list
+      fetchFarmers()
+    } catch (error: any) {
+      console.error('Delete error:', error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete farmer",
+        variant: "destructive"
+      })
     }
   }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading farmers...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -155,14 +195,18 @@ export default function ManageFarmers() {
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
             <CardContent className="p-6">
-              <p className="text-sm text-gray-600 mb-1">Active Farmers</p>
-              <p className="text-3xl font-bold text-green-600">{farmers.filter(f => f.status === "active").length}</p>
+              <p className="text-sm text-gray-600 mb-1">Districts Covered</p>
+              <p className="text-3xl font-bold text-green-600">
+                {new Set(farmers.map(f => f.district).filter(Boolean)).size}
+              </p>
             </CardContent>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
             <CardContent className="p-6">
-              <p className="text-sm text-gray-600 mb-1">Total Livestock</p>
-              <p className="text-3xl font-bold text-purple-600">{farmers.reduce((sum, f) => sum + f.livestock, 0)}</p>
+              <p className="text-sm text-gray-600 mb-1">Sectors Covered</p>
+              <p className="text-3xl font-bold text-purple-600">
+                {new Set(farmers.map(f => f.sector).filter(Boolean)).size}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -172,46 +216,19 @@ export default function ManageFarmers() {
           <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white">
             <CardTitle className="flex items-center gap-2">
               <Filter className="w-5 h-5 text-gray-600" />
-              Filter & Search
+              Search Farmers
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <Input
-                    type="text"
-                    placeholder="Search by name, email, or district..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={filterStatus === "all" ? "default" : "outline"}
-                  onClick={() => setFilterStatus("all")}
-                  className="flex-1"
-                >
-                  All
-                </Button>
-                <Button
-                  variant={filterStatus === "active" ? "default" : "outline"}
-                  onClick={() => setFilterStatus("active")}
-                  className="flex-1"
-                >
-                  Active
-                </Button>
-                <Button
-                  variant={filterStatus === "inactive" ? "default" : "outline"}
-                  onClick={() => setFilterStatus("inactive")}
-                  className="flex-1"
-                >
-                  Inactive
-                </Button>
-              </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                type="text"
+                placeholder="Search by name, email, district, or sector..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </CardContent>
         </Card>
@@ -225,78 +242,80 @@ export default function ManageFarmers() {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Farmer</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Contact</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Location</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Livestock</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredFarmers.map((farmer) => (
-                    <tr key={farmer.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div>
-                          <p className="font-medium text-gray-900">{farmer.name}</p>
-                          <p className="text-sm text-gray-500">{farmer.email}</p>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Phone className="w-4 h-4" />
-                          {farmer.phone}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <MapPin className="w-4 h-4" />
-                          <div>
-                            <p>{farmer.district}</p>
-                            <p className="text-xs text-gray-500">{farmer.sector}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-gray-900">{farmer.livestock}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge className={
-                          farmer.status === "active" 
-                            ? "bg-green-100 text-green-700" 
-                            : "bg-gray-100 text-gray-700"
-                        }>
-                          {farmer.status}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleViewDetails(farmer)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDelete(farmer.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
+            {filteredFarmers.length === 0 ? (
+              <div className="text-center py-12">
+                <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">
+                  {searchTerm ? "No farmers found matching your search" : "No farmers registered yet"}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Farmer</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Contact</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Location</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Joined</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredFarmers.map((farmer) => (
+                      <tr key={farmer._id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div>
+                            <p className="font-medium text-gray-900">{farmer.name}</p>
+                            <p className="text-sm text-gray-500">{farmer.email}</p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Phone className="w-4 h-4" />
+                            {farmer.phone || 'N/A'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <MapPin className="w-4 h-4" />
+                            <div>
+                              <p>{farmer.district || 'N/A'}</p>
+                              <p className="text-xs text-gray-500">{farmer.sector || 'N/A'}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Calendar className="w-4 h-4" />
+                            {formatDate(farmer.createdAt)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleViewDetails(farmer)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDelete(farmer._id, farmer.name)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -319,33 +338,29 @@ export default function ManageFarmers() {
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600 mb-1">Phone</p>
-                    <p className="font-semibold">{selectedFarmer.phone}</p>
+                    <p className="font-semibold">{selectedFarmer.phone || 'Not provided'}</p>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600 mb-1">District</p>
-                    <p className="font-semibold">{selectedFarmer.district}</p>
+                    <p className="font-semibold">{selectedFarmer.district || 'Not provided'}</p>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600 mb-1">Sector</p>
-                    <p className="font-semibold">{selectedFarmer.sector}</p>
+                    <p className="font-semibold">{selectedFarmer.sector || 'Not provided'}</p>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Livestock Count</p>
-                    <p className="font-semibold">{selectedFarmer.livestock}</p>
+                    <p className="text-sm text-gray-600 mb-1">Role</p>
+                    <Badge className="bg-blue-100 text-blue-700">
+                      {selectedFarmer.role}
+                    </Badge>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600 mb-1">Joined Date</p>
-                    <p className="font-semibold">{formatDate(selectedFarmer.joinedDate)}</p>
+                    <p className="font-semibold">{formatDate(selectedFarmer.createdAt)}</p>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Status</p>
-                    <Badge className={
-                      selectedFarmer.status === "active" 
-                        ? "bg-green-100 text-green-700" 
-                        : "bg-gray-100 text-gray-700"
-                    }>
-                      {selectedFarmer.status}
-                    </Badge>
+                    <p className="text-sm text-gray-600 mb-1">Last Updated</p>
+                    <p className="font-semibold">{formatDate(selectedFarmer.updatedAt)}</p>
                   </div>
                 </div>
               </div>

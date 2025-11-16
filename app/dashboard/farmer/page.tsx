@@ -2,74 +2,112 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import NavigationBar from "@/components/NavigationBar"
-import { Calendar, Plus, Beef, Activity, AlertTriangle, Phone, FileText, Bell } from "lucide-react"
+import { Calendar, Plus, Beef, Activity, AlertTriangle, Phone, FileText, Bell, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
 
 export default function FarmerDashboard() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [livestock, setLivestock] = useState<any[]>([])
-  const [reportsCount, setReportsCount] = useState(0)
+  const [appointments, setAppointments] = useState<any[]>([])
+  const [appointmentsCount, setAppointmentsCount] = useState(0)
+  const [alertsCount, setAlertsCount] = useState(0)
 
-  // Fetch user & livestock data
+  // Fetch all dashboard data from API
   useEffect(() => {
-    try {
-      const userStr = localStorage.getItem("user")
-      if (!userStr || userStr === "undefined") {
-        router.push("/auth/signin")
-        return
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const userStr = localStorage.getItem("user")
+        
+        if (!token || !userStr || userStr === "undefined") {
+          router.push("/auth/login")
+          return
+        }
+
+        const userData = JSON.parse(userStr)
+        setUser(userData)
+
+        // Fetch livestock from API
+        const livestockResponse = await fetch(`${BACKEND_URL}/api/livestock`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        
+        const livestockData = await livestockResponse.json()
+        
+        if (livestockResponse.ok && livestockData.success) {
+          console.log('✅ Livestock loaded:', livestockData.data.length)
+          setLivestock(livestockData.data || [])
+        } else {
+          console.error('❌ Failed to load livestock:', livestockData.message)
+          setLivestock([])
+        }
+
+        // Fetch appointments from API
+        const appointmentsResponse = await fetch(`${BACKEND_URL}/api/appointments`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        
+        const appointmentsData = await appointmentsResponse.json()
+        
+        if (appointmentsResponse.ok && appointmentsData.success) {
+          const allAppointments = appointmentsData.data || []
+          console.log('✅ Appointments loaded:', allAppointments.length)
+          setAppointments(allAppointments)
+          
+          // Count upcoming appointments (this week)
+          const today = new Date()
+          today.setHours(0, 0, 0, 0) // Reset to start of day
+          const weekFromNow = new Date(today)
+          weekFromNow.setDate(today.getDate() + 7)
+
+          const upcomingCount = allAppointments.filter((apt: any) => {
+            const aptDate = new Date(apt.date)
+            aptDate.setHours(0, 0, 0, 0) // Reset to start of day
+            return aptDate >= today && aptDate <= weekFromNow && 
+                   ['pending', 'confirmed'].includes(apt.status)
+          }).length
+
+          console.log('📅 Appointments this week:', upcomingCount)
+          setAppointmentsCount(upcomingCount)
+        } else {
+          console.error('❌ Failed to load appointments:', appointmentsData.message)
+          setAppointments([])
+        }
+
+        // Fetch alerts count (if you have an alerts endpoint)
+        // For now, we'll use a placeholder
+        setAlertsCount(0)
+
+        setLoading(false)
+      } catch (error) {
+        console.error("❌ Error loading dashboard data:", error)
+        setLivestock([])
+        setAppointments([])
+        setLoading(false)
       }
-
-      const userData = JSON.parse(userStr)
-      setUser(userData)
-
-      const storedLivestock = localStorage.getItem("livestock")
-      if (storedLivestock && storedLivestock !== "undefined") {
-        setLivestock(JSON.parse(storedLivestock))
-      } else {
-        const defaultLivestock = [
-          { id: 1, name: "Cow #1", type: "Cattle", healthStatus: "healthy" },
-          { id: 2, name: "Cow #2", type: "Cattle", healthStatus: "sick" },
-          { id: 3, name: "Cow #3", type: "Cattle", healthStatus: "healthy" },
-          { id: 4, name: "Cow #4", type: "Cattle", healthStatus: "healthy" },
-          { id: 5, name: "Cow #5", type: "Cattle", healthStatus: "healthy" },
-          { id: 6, name: "Cow #6", type: "Cattle", healthStatus: "healthy" },
-          { id: 7, name: "Cow #7", type: "Cattle", healthStatus: "healthy" },
-          { id: 8, name: "Cow #8", type: "Cattle", healthStatus: "healthy" },
-          { id: 9, name: "Goat #1", type: "Goat", healthStatus: "healthy" },
-          { id: 10, name: "Goat #2", type: "Goat", healthStatus: "healthy" },
-          { id: 11, name: "Goat #3", type: "Goat", healthStatus: "healthy" },
-          { id: 12, name: "Goat #4", type: "Goat", healthStatus: "healthy" },
-        ]
-        setLivestock(defaultLivestock)
-        localStorage.setItem("livestock", JSON.stringify(defaultLivestock))
-      }
-
-      // Load reports count
-      const storedReports = localStorage.getItem("vetReports")
-      if (storedReports && storedReports !== "undefined") {
-        const allReports = JSON.parse(storedReports)
-        const myReports = allReports.filter((r: any) => r.farmerName === userData.name)
-        setReportsCount(myReports.length)
-      }
-
-      setLoading(false)
-    } catch (error) {
-      console.error("Error loading user data:", error)
-      router.push("/auth/signin")
     }
+
+    fetchDashboardData()
   }, [router])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-green-600" />
+          <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     )
@@ -79,7 +117,7 @@ export default function FarmerDashboard() {
 
   const farmerName = user.name || "Farmer"
 
-  // Livestock stats
+  // Calculate livestock stats from real data
   const livestockStats = livestock.reduce(
     (acc, l) => {
       acc.total++
@@ -104,25 +142,14 @@ export default function FarmerDashboard() {
     .map(type => `${livestockStats[type]} ${type.toLowerCase()}${livestockStats[type] > 1 ? "s" : ""}`)
     .join(", ") || "No livestock"
 
-  const upcomingAppointments = 2
-  const pendingAlerts = 3
-
-  const recentAppointments = [
-    { id: 1, vetName: "Dr. Sarah Mukamana", date: "Oct 18, 2025", time: "10:00 AM", livestock: "Cow #3", status: "confirmed" },
-    { id: 2, vetName: "Dr. Paul Nkusi", date: "Oct 20, 2025", time: "2:00 PM", livestock: "Goat #5", status: "pending" },
-  ]
-
-  const healthAlerts = [
-    { id: 1, type: "vaccination", message: "Vaccination due for Cow #1 and Cow #2", date: "Oct 16, 2025", priority: "high" },
-    { id: 2, type: "disease", message: "Foot and Mouth Disease alert in your district", date: "Oct 14, 2025", priority: "medium" },
-    { id: 3, type: "checkup", message: "Annual checkup recommended for Goat #3", date: "Oct 12, 2025", priority: "low" },
-  ]
+  // Get recent appointments (sorted by date, limit 5)
+  const recentAppointments = appointments
+    .filter(apt => ['pending', 'confirmed'].includes(apt.status))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 5)
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ✅ Navigation Bar */}
-      {/* <NavigationBar /> */}
-
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
@@ -132,57 +159,57 @@ export default function FarmerDashboard() {
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
-            {/* Total Livestock */}
-            <Card onClick={() => router.push('/dashboard/farmer/livestock')} className="cursor-pointer hover:shadow-md transition">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">Total Livestock</CardTitle>
-                <Beef className="h-4 w-4 text-gray-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{livestockStats.total}</div>
-                <p className="text-xs text-gray-500 mt-1">{livestockSummaryText}</p>
-              </CardContent>
-            </Card>
+          {/* Total Livestock */}
+          <Card onClick={() => router.push('/dashboard/farmer/livestock')} className="cursor-pointer hover:shadow-md transition">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total Livestock</CardTitle>
+              <Beef className="h-4 w-4 text-gray-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{livestockStats.total}</div>
+              <p className="text-xs text-gray-500 mt-1">{livestockSummaryText}</p>
+            </CardContent>
+          </Card>
 
-            {/* Appointments */}
-            <Card onClick={() => router.push('/dashboard/farmer/appointments')} className="cursor-pointer hover:shadow-md transition">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">Appointments</CardTitle>
-                <Calendar className="h-4 w-4 text-gray-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{upcomingAppointments}</div>
-                <p className="text-xs text-gray-500 mt-1">This week</p>
-              </CardContent>
-            </Card>
+          {/* Appointments */}
+          <Card onClick={() => router.push('/dashboard/farmer/appointments')} className="cursor-pointer hover:shadow-md transition">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Appointments</CardTitle>
+              <Calendar className="h-4 w-4 text-gray-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{appointmentsCount}</div>
+              <p className="text-xs text-gray-500 mt-1">This week</p>
+            </CardContent>
+          </Card>
 
-            {/* Health Alerts */}
-            <Card onClick={() => router.push('/dashboard/farmer/alerts')} className="cursor-pointer hover:shadow-md transition">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">Health Alerts</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-orange-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{pendingAlerts}</div>
-                <p className="text-xs text-gray-500 mt-1">Needs attention</p>
-              </CardContent>
-            </Card>
+          {/* Health Alerts */}
+          <Card onClick={() => router.push('/dashboard/farmer/alerts')} className="cursor-pointer hover:shadow-md transition">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Health Alerts</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{alertsCount}</div>
+              <p className="text-xs text-gray-500 mt-1">Needs attention</p>
+            </CardContent>
+          </Card>
 
-            {/* Health Status */}
-            <Card onClick={() => router.push('/dashboard/farmer/health-records')} className="cursor-pointer hover:shadow-md transition">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">Health Status</CardTitle>
-                <Activity className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {livestockStats.total > 0 ? (livestockStats.sick === 0 ? "Good" : "Fair") : "N/A"}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {livestockStats.total > 0 ? `${livestockStats.healthy} of ${livestockStats.total} healthy` : "No livestock"}
-                </p>
-              </CardContent>
-            </Card>
+          {/* Health Status */}
+          <Card onClick={() => router.push('/dashboard/farmer/health-records')} className="cursor-pointer hover:shadow-md transition">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Health Status</CardTitle>
+              <Activity className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {livestockStats.total > 0 ? (livestockStats.sick === 0 ? "Good" : "Fair") : "N/A"}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {livestockStats.total > 0 ? `${livestockStats.healthy} of ${livestockStats.total} healthy` : "No livestock"}
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Main & Sidebar */}
@@ -204,9 +231,6 @@ export default function FarmerDashboard() {
                   </Button>
                   <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/reports')}>
                     <FileText className="mr-2 h-4 w-4" /> Veterinary Reports
-                    {reportsCount > 0 && (
-                      <Badge className="ml-auto bg-blue-500">{reportsCount}</Badge>
-                    )}
                   </Button>
                   <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/dashboard/farmer/health-records')}>
                     <Activity className="mr-2 h-4 w-4" /> Health Records
@@ -225,24 +249,39 @@ export default function FarmerDashboard() {
                 <CardDescription>Your scheduled veterinary visits</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {recentAppointments.map(a => (
-                  <div key={a.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold">{a.vetName}</h4>
-                        <Badge variant={a.status === "confirmed" ? "default" : "secondary"}>{a.status}</Badge>
-                      </div>
-                      <p className="text-sm text-gray-600">{a.date} at {a.time}</p>
-                      <p className="text-sm text-gray-500">{a.livestock}</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/farmer/appointments')}>
-                      View Details
+                {recentAppointments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600 mb-4">No upcoming appointments</p>
+                    <Button className="bg-green-600 hover:bg-green-700" onClick={() => router.push('/dashboard/farmer/appointments/book')}>
+                      <Calendar className="w-4 h-4 mr-2" /> Book Your First Appointment
                     </Button>
                   </div>
-                ))}
-                <Button variant="link" className="w-full mt-4 text-green-600" onClick={() => router.push('/dashboard/farmer/appointments')}>
-                  View All Appointments
-                </Button>
+                ) : (
+                  <>
+                    {recentAppointments.map((apt: any) => (
+                      <div key={apt._id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold">{apt.vetName}</h4>
+                            <Badge variant={apt.status === "confirmed" ? "default" : "secondary"}>
+                              {apt.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            {new Date(apt.date).toLocaleDateString()} at {apt.time}
+                          </p>
+                          <p className="text-sm text-gray-500">{apt.livestockName}</p>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/farmer/appointments')}>
+                          View Details
+                        </Button>
+                      </div>
+                    ))}
+                    <Button variant="link" className="w-full mt-4 text-green-600" onClick={() => router.push('/dashboard/farmer/appointments')}>
+                      View All Appointments
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
 
@@ -292,26 +331,20 @@ export default function FarmerDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Health Alerts</span>
-                  <Badge variant="destructive">{pendingAlerts}</Badge>
+                  {alertsCount > 0 && <Badge variant="destructive">{alertsCount}</Badge>}
                 </CardTitle>
                 <CardDescription>Important notifications</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {healthAlerts.map(alert => (
-                  <div
-                    key={alert.id}
-                    className={`p-3 rounded-lg border-l-4 ${alert.priority === "high" ? "border-red-500 bg-red-50" : alert.priority === "medium" ? "border-orange-500 bg-orange-50" : "border-blue-500 bg-blue-50"}`}
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      <Badge variant={alert.type === "vaccination" ? "default" : "secondary"} className="text-xs">{alert.type}</Badge>
-                      <span className="text-xs text-gray-500">{alert.date}</span>
-                    </div>
-                    <p className="text-sm font-medium mt-2">{alert.message}</p>
+                {alertsCount === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-gray-600">No health alerts at the moment</p>
                   </div>
-                ))}
-                <Button variant="link" className="w-full mt-4 text-green-600" onClick={() => router.push('/dashboard/farmer/alerts')}>
-                  View All Alerts
-                </Button>
+                ) : (
+                  <Button variant="link" className="w-full text-green-600" onClick={() => router.push('/dashboard/farmer/alerts')}>
+                    View All Alerts
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -337,7 +370,7 @@ export default function FarmerDashboard() {
               </CardContent>
             </Card>
 
-             {/* Support */}
+            {/* Support */}
             <Card>
               <CardHeader>
                 <CardTitle>Need Help?</CardTitle>

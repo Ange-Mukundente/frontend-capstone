@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react"
+import { Plus, Edit, Trash2, AlertCircle, CheckCircle, ArrowLeft, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -11,11 +11,13 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/hooks/use-toast"
-import { useOfflineActions } from "@/hooks/useOfflineActions"
 import { useRouter } from "next/navigation"
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
+
 type Livestock = {
-  id: string
+  _id?: string
+  id?: string
   name: string
   type: string
   breed: string
@@ -29,9 +31,9 @@ type Livestock = {
 export default function LivestockManagement() {
   const router = useRouter()
   const { toast } = useToast()
-  const { isOnline, queueAction } = useOfflineActions()
   
   const [livestock, setLivestock] = useState<Livestock[]>([])
+  const [loading, setLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
   const [selectedLivestock, setSelectedLivestock] = useState<Livestock | null>(null)
@@ -50,45 +52,58 @@ export default function LivestockManagement() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState("All")
 
-  const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
-    if (typeof window === "undefined") return defaultValue
+  // Fetch livestock from backend
+  const fetchLivestock = async () => {
     try {
-      const stored = localStorage.getItem(key)
-      if (!stored || stored === "undefined") return defaultValue
-      const parsed = JSON.parse(stored)
-      return Array.isArray(parsed) ? (parsed as T) : defaultValue
-    } catch (err) {
-      console.error(`Error parsing ${key} from localStorage`, err)
-      return defaultValue
+      setLoading(true)
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        toast({
+          title: "❌ Authentication Error",
+          description: "Please login again",
+          variant: "destructive"
+        })
+        router.push('/auth/login')
+        return
+      }
+
+      const response = await fetch(`${BACKEND_URL}/api/livestock`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setLivestock(data.data || [])
+      } else {
+        throw new Error(data.message || 'Failed to fetch livestock')
+      }
+    } catch (error) {
+      console.error('Fetch livestock error:', error)
+      toast({
+        title: "❌ Error",
+        description: error instanceof Error ? error.message : "Failed to fetch livestock",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    const sampleData: Livestock[] = [
-      { id: "1", name: "Cow #1", type: "Cattle", breed: "Friesian", age: "3 years", weight: "450kg", healthStatus: "healthy", lastCheckup: "2025-10-10", notes: "Vaccination up to date" },
-      { id: "2", name: "Cow #2", type: "Cattle", breed: "Jersey", age: "2 years", weight: "380kg", healthStatus: "sick", lastCheckup: "2025-10-15", notes: "Showing signs of fever, treatment started" },
-      { id: "3", name: "Goat #1", type: "Goat", breed: "Boer", age: "1 year", weight: "45kg", healthStatus: "healthy", lastCheckup: "2025-10-12", notes: "Good condition" }
-    ]
-
-    const storedLivestock = loadFromLocalStorage<Livestock[]>("livestock", sampleData)
-    setLivestock(storedLivestock)
-
-    if (!localStorage.getItem("livestock")) {
-      localStorage.setItem("livestock", JSON.stringify(sampleData))
-    }
+    fetchLivestock()
   }, [])
-
-  const saveLivestock = (updatedLivestock: Livestock[]) => {
-    setLivestock(updatedLivestock)
-    localStorage.setItem("livestock", JSON.stringify(updatedLivestock))
-  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  // Add livestock with offline support
+  // Add livestock to backend
   const handleAddLivestock = async () => {
     if (!formData.name.trim()) {
       toast({
@@ -99,27 +114,53 @@ export default function LivestockManagement() {
       return
     }
 
-    const newLivestock: Livestock = {
-      id: `livestock-${Date.now()}`,
-      ...formData,
-      lastCheckup: new Date().toISOString().split('T')[0]
+    try {
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        toast({
+          title: "❌ Authentication Error",
+          description: "Please login again",
+          variant: "destructive"
+        })
+        router.push('/auth/login')
+        return
+      }
+
+      const response = await fetch(`${BACKEND_URL}/api/livestock`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...formData,
+          lastCheckup: new Date().toISOString()
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast({
+          title: "✅ Livestock Added",
+          description: `${formData.name} has been added successfully.`,
+        })
+        
+        setIsAddModalOpen(false)
+        resetForm()
+        fetchLivestock() // Refresh the list
+      } else {
+        throw new Error(data.message || 'Failed to add livestock')
+      }
+    } catch (error) {
+      console.error('Add livestock error:', error)
+      toast({
+        title: "❌ Error",
+        description: error instanceof Error ? error.message : "Failed to add livestock",
+        variant: "destructive"
+      })
     }
-
-    // Save locally immediately (optimistic update)
-    saveLivestock([...livestock, newLivestock])
-
-    // Queue for sync
-    await queueAction('add-livestock', newLivestock)
-
-    toast({
-      title: isOnline ? "✅ Livestock Added" : "✅ Livestock Added Offline",
-      description: isOnline 
-        ? `${newLivestock.name} has been added successfully.`
-        : `${newLivestock.name} saved locally. Will sync when online.`,
-    })
-
-    setIsAddModalOpen(false)
-    resetForm()
   }
 
   const openUpdateModal = (animal: Livestock) => {
@@ -127,16 +168,16 @@ export default function LivestockManagement() {
     setFormData({
       name: animal.name,
       type: animal.type,
-      breed: animal.breed,
-      age: animal.age,
-      weight: animal.weight,
+      breed: animal.breed || "",
+      age: animal.age || "",
+      weight: animal.weight || "",
       healthStatus: animal.healthStatus,
-      notes: animal.notes
+      notes: animal.notes || ""
     })
     setIsUpdateModalOpen(true)
   }
 
-  // Update livestock with offline support
+  // Update livestock in backend
   const handleUpdateLivestock = async () => {
     if (!formData.name.trim()) {
       toast({
@@ -149,50 +190,78 @@ export default function LivestockManagement() {
 
     if (!selectedLivestock) return
 
-    const updatedAnimal: Livestock = {
-      ...selectedLivestock,
-      ...formData,
-      lastCheckup: new Date().toISOString().split('T')[0]
+    try {
+      const token = localStorage.getItem('token')
+      const livestockId = selectedLivestock._id || selectedLivestock.id
+
+      const response = await fetch(`${BACKEND_URL}/api/livestock/${livestockId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast({
+          title: "✅ Livestock Updated",
+          description: `${formData.name} has been updated successfully.`,
+        })
+        
+        setIsUpdateModalOpen(false)
+        resetForm()
+        fetchLivestock() // Refresh the list
+      } else {
+        throw new Error(data.message || 'Failed to update livestock')
+      }
+    } catch (error) {
+      console.error('Update livestock error:', error)
+      toast({
+        title: "❌ Error",
+        description: error instanceof Error ? error.message : "Failed to update livestock",
+        variant: "destructive"
+      })
     }
-
-    // Update locally immediately
-    const updatedLivestock = livestock.map(animal =>
-      animal.id === selectedLivestock.id ? updatedAnimal : animal
-    )
-    saveLivestock(updatedLivestock)
-
-    // Queue for sync
-    await queueAction('update-livestock', updatedAnimal)
-
-    toast({
-      title: isOnline ? "✅ Livestock Updated" : "✅ Livestock Updated Offline",
-      description: isOnline
-        ? `${updatedAnimal.name} has been updated successfully.`
-        : `${updatedAnimal.name} updated locally. Will sync when online.`,
-    })
-
-    setIsUpdateModalOpen(false)
-    resetForm()
   }
 
-  // Delete livestock with offline support
-  const handleDeleteLivestock = async (id: string) => {
-    const animalToDelete = livestock.find(a => a.id === id)
-    if (!animalToDelete) return
+  // Delete livestock from backend
+  const handleDeleteLivestock = async (animal: Livestock) => {
+    const livestockId = animal._id || animal.id
 
-    // Delete locally immediately
-    const updatedLivestock = livestock.filter(animal => animal.id !== id)
-    saveLivestock(updatedLivestock)
+    try {
+      const token = localStorage.getItem('token')
 
-    // Queue for sync
-    await queueAction('delete-livestock', { id })
+      const response = await fetch(`${BACKEND_URL}/api/livestock/${livestockId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
 
-    toast({
-      title: isOnline ? "✅ Livestock Deleted" : "✅ Livestock Deleted Offline",
-      description: isOnline
-        ? `${animalToDelete.name} has been removed.`
-        : `${animalToDelete.name} deleted locally. Will sync when online.`,
-    })
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast({
+          title: "✅ Livestock Deleted",
+          description: `${animal.name} has been removed.`,
+        })
+        
+        fetchLivestock() // Refresh the list
+      } else {
+        throw new Error(data.message || 'Failed to delete livestock')
+      }
+    } catch (error) {
+      console.error('Delete livestock error:', error)
+      toast({
+        title: "❌ Error",
+        description: error instanceof Error ? error.message : "Failed to delete livestock",
+        variant: "destructive"
+      })
+    }
   }
 
   const resetForm = () => {
@@ -239,6 +308,17 @@ export default function LivestockManagement() {
   const currentAnimals = filteredLivestock.slice(indexOfFirst, indexOfLast)
   const totalPages = Math.ceil(filteredLivestock.length / itemsPerPage)
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-green-600" />
+          <p className="text-gray-600">Loading livestock...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -263,16 +343,6 @@ export default function LivestockManagement() {
             Add Livestock
           </Button>
         </div>
-
-        {/* Offline Indicator */}
-        {!isOnline && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
-            <p className="text-sm text-orange-900">
-              📡 <strong>Offline Mode:</strong> You can still add, edit, and delete livestock. 
-              Changes will sync automatically when you're back online.
-            </p>
-          </div>
-        )}
 
         {/* Search and Filter */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
@@ -335,21 +405,19 @@ export default function LivestockManagement() {
                     <TableHead>Age</TableHead>
                     <TableHead>Weight</TableHead>
                     <TableHead>Health Status</TableHead>
-                    <TableHead>Last Checkup</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {currentAnimals.map((animal) => (
-                    <TableRow key={animal.id}>
+                    <TableRow key={animal._id || animal.id}>
                       <TableCell className="font-medium">{animal.name}</TableCell>
                       <TableCell>{animal.type}</TableCell>
-                      <TableCell>{animal.breed}</TableCell>
-                      <TableCell>{animal.age}</TableCell>
-                      <TableCell>{animal.weight}</TableCell>
+                      <TableCell>{animal.breed || '-'}</TableCell>
+                      <TableCell>{animal.age || '-'}</TableCell>
+                      <TableCell>{animal.weight || '-'}</TableCell>
                       <TableCell>{getStatusBadge(animal.healthStatus)}</TableCell>
-                      <TableCell>{animal.lastCheckup}</TableCell>
                       <TableCell className="max-w-xs truncate" title={animal.notes}>
                         {animal.notes || "-"}
                       </TableCell>
@@ -366,7 +434,7 @@ export default function LivestockManagement() {
                             variant="outline" 
                             size="sm"
                             className="text-red-600 hover:bg-red-50"
-                            onClick={() => handleDeleteLivestock(animal.id)}
+                            onClick={() => handleDeleteLivestock(animal)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -435,6 +503,7 @@ export default function LivestockManagement() {
                   <option value="Sheep">Sheep</option>
                   <option value="Pig">Pig</option>
                   <option value="Chicken">Chicken</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div>
@@ -493,6 +562,7 @@ export default function LivestockManagement() {
                   <option value="Sheep">Sheep</option>
                   <option value="Pig">Pig</option>
                   <option value="Chicken">Chicken</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div>

@@ -267,8 +267,8 @@ export default function LoginPage() {
               </Link>
             </p>
 
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-xs text-blue-800 text-center">
+            <div className="mt-6 p-4 bg-green-50 rounded-lg">
+              <p className="text-xs text-green-800 text-center">
                 <strong>🌾 Farmers:</strong> Manage livestock health<br/>
                 <strong>🩺 Veterinarians:</strong> Provide expert care<br/>
                 <strong>👨‍💼 Admins:</strong> Oversee operations
