@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Calendar, Clock, ArrowLeft, User, Stethoscope, MapPin, Navigation, Star, Phone, Mail, Search, X } from "lucide-react"
+import { Calendar, Clock, ArrowLeft, User, Stethoscope, MapPin, Navigation, Star, Phone, Mail, Search, X, Loader2, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -11,9 +11,15 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 
 interface Livestock {
-  id: number
+  _id: string
+  id: string
   name: string
   type: string
+  farmerId: string
+  farmerName?: string
+  breed?: string
+  age?: number
+  healthStatus?: string
 }
 
 interface Veterinarian {
@@ -39,11 +45,15 @@ interface FormData {
   notes: string
 }
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
+
 export default function BookAppointment() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [livestock, setLivestock] = useState<Livestock[]>([])
-  const [step, setStep] = useState(1) // 1 = Select Vet, 2 = Fill Form
+  const [loading, setLoading] = useState(true)
+  const [isOffline, setIsOffline] = useState(false)
+  const [step, setStep] = useState(1)
   const [selectedVet, setSelectedVet] = useState<Veterinarian | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [formData, setFormData] = useState<FormData>({
@@ -54,7 +64,7 @@ export default function BookAppointment() {
     notes: ""
   })
 
-  // Veterinarians in Nyagatare and Gatsibo Districts (2 vets per sector)
+  // Complete veterinarians list with all 16 vets
   const veterinarians: Veterinarian[] = [
     // NYAGATARE DISTRICT - Nyagatare Sector
     {
@@ -295,18 +305,107 @@ export default function BookAppointment() {
     "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM"
   ])
 
-  // Load livestock and user
+  // Check online/offline status
   useEffect(() => {
-    const storedLivestock = localStorage.getItem("livestock")
-    if (storedLivestock && storedLivestock !== "undefined") {
-      setLivestock(JSON.parse(storedLivestock))
-    }
+    const handleOnline = () => setIsOffline(false)
+    const handleOffline = () => setIsOffline(true)
 
-    const userStr = localStorage.getItem("user")
-    if (userStr && userStr !== "undefined") {
-      setUser(JSON.parse(userStr))
+    setIsOffline(!navigator.onLine)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
     }
   }, [])
+
+  // Load all livestock from database and user from localStorage
+  useEffect(() => {
+    const loadUserAndLivestock = async () => {
+      try {
+        setLoading(true)
+        
+        // Load user from localStorage
+        const userStr = localStorage.getItem("user")
+        const token = localStorage.getItem('token')
+        
+        if (!userStr || userStr === "undefined") {
+          router.push("/auth/login")
+          return
+        }
+
+        const userData = JSON.parse(userStr)
+        setUser(userData)
+
+        // Try to fetch from API if online
+        if (navigator.onLine && token) {
+          try {
+            // Fetch ALL livestock from database using the same pattern as dashboard
+            const response = await fetch(`${BACKEND_URL}/api/livestock`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            })
+            
+            const result = await response.json()
+            
+            if (response.ok && result.success) {
+              console.log('✅ Livestock loaded from API:', result.data.length)
+              setLivestock(result.data || [])
+              // Cache the data like dashboard does
+              localStorage.setItem('livestock_cache', JSON.stringify(result.data || []))
+            } else {
+              throw new Error(result.message || 'Failed to load from API')
+            }
+          } catch (apiError) {
+            console.log('⚠️ API fetch failed, using cached data')
+            loadCachedData()
+          }
+        } else {
+          // Load from cache when offline
+          console.log('📱 Offline mode - loading cached data')
+          loadCachedData()
+        }
+
+        setLoading(false)
+      } catch (error) {
+        console.error("❌ Error loading data:", error)
+        loadCachedData()
+        setLoading(false)
+      }
+    }
+
+    const loadCachedData = () => {
+      // Load livestock from cache (same pattern as dashboard)
+      const cachedLivestock = localStorage.getItem('livestock_cache')
+      if (cachedLivestock && cachedLivestock !== 'undefined') {
+        try {
+          const parsedLivestock = JSON.parse(cachedLivestock)
+          setLivestock(parsedLivestock)
+          console.log('📦 Loaded cached livestock:', parsedLivestock.length)
+        } catch (e) {
+          console.error('Failed to parse cached livestock')
+          setLivestock([])
+        }
+      } else {
+        // Fallback to old localStorage key
+        const oldLivestock = localStorage.getItem('livestock')
+        if (oldLivestock && oldLivestock !== 'undefined') {
+          try {
+            const parsedLivestock = JSON.parse(oldLivestock)
+            setLivestock(parsedLivestock)
+          } catch (e) {
+            setLivestock([])
+          }
+        }
+      }
+    }
+
+    loadUserAndLivestock()
+  }, [router])
 
   const filteredVets = veterinarians.filter(vet =>
     vet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -334,7 +433,7 @@ export default function BookAppointment() {
     return today.toISOString().split('T')[0]
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.livestockId || !formData.date || !formData.time || !formData.reason) {
       alert("Please fill in all required fields")
       return
@@ -345,7 +444,7 @@ export default function BookAppointment() {
       return
     }
 
-    const selectedLivestock = livestock.find(l => l.id === parseInt(formData.livestockId))
+    const selectedLivestock = livestock.find(l => l._id === formData.livestockId || l.id === formData.livestockId)
 
     if (!selectedLivestock) {
       alert("Invalid livestock selection")
@@ -353,8 +452,7 @@ export default function BookAppointment() {
     }
 
     const newAppointment = {
-      id: Date.now(),
-      farmerId: user?.id || 1,
+      farmerId: user?.id || user?._id,
       farmerName: user?.name || "Farmer",
       farmerPhone: user?.phone || "+250786160692",
       farmerEmail: user?.email,
@@ -362,41 +460,113 @@ export default function BookAppointment() {
       vetName: selectedVet.name,
       vetPhone: selectedVet.phone,
       vetEmail: selectedVet.email,
-      livestockId: selectedLivestock.id,
+      livestockId: selectedLivestock._id || selectedLivestock.id,
       livestockName: selectedLivestock.name,
       livestockType: selectedLivestock.type,
       date: formData.date,
       time: formData.time,
       reason: formData.reason,
-      issue: formData.notes,
       notes: formData.notes,
       status: "pending",
-      urgency: "normal",
       location: selectedVet.sector + ", " + selectedVet.district,
-      createdAt: new Date().toISOString()
     }
+
+    const token = localStorage.getItem('token')
 
     try {
-      const existingAppointments = localStorage.getItem("appointments")
-      const appointments = existingAppointments && existingAppointments !== "undefined" 
-        ? JSON.parse(existingAppointments) 
-        : []
-      
-      appointments.push(newAppointment)
-      localStorage.setItem("appointments", JSON.stringify(appointments))
+      // Save to database via API (same pattern as dashboard)
+      if (navigator.onLine && token) {
+        const response = await fetch(`${BACKEND_URL}/api/appointments`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newAppointment),
+        })
 
-      alert("Appointment booked successfully!")
-      router.push("/dashboard/farmer/appointments")
+        const result = await response.json()
+
+        if (response.ok && result.success) {
+          // Update cache like dashboard does
+          const existingAppointments = localStorage.getItem('appointments_cache')
+          const appointments = existingAppointments && existingAppointments !== "undefined" 
+            ? JSON.parse(existingAppointments) 
+            : []
+          
+          appointments.push({ ...newAppointment, _id: result.data._id })
+          localStorage.setItem('appointments_cache', JSON.stringify(appointments))
+          
+          alert("Appointment booked successfully!")
+          router.push("/dashboard/farmer/appointments")
+          return
+        } else {
+          throw new Error(result.message || 'Failed to save appointment')
+        }
+      } else {
+        throw new Error('Offline or no token')
+      }
     } catch (error) {
       console.error("Error saving appointment:", error)
-      alert("Error booking appointment. Please try again.")
+      
+      // Fallback: Save only to localStorage if database fails
+      try {
+        const existingAppointments = localStorage.getItem("appointments_cache")
+        const appointments = existingAppointments && existingAppointments !== "undefined" 
+          ? JSON.parse(existingAppointments) 
+          : []
+        
+        appointments.push({ ...newAppointment, _id: Date.now().toString() })
+        localStorage.setItem("appointments_cache", JSON.stringify(appointments))
+        
+        // Also update old key for compatibility
+        const oldAppointments = localStorage.getItem("appointments")
+        const oldAppts = oldAppointments && oldAppointments !== "undefined" 
+          ? JSON.parse(oldAppointments) 
+          : []
+        oldAppts.push({ ...newAppointment, id: Date.now() })
+        localStorage.setItem("appointments", JSON.stringify(oldAppts))
+        
+        alert("Appointment booked successfully! (Saved locally)")
+        router.push("/dashboard/farmer/appointments")
+      } catch (localError) {
+        alert("Error booking appointment. Please try again.")
+      }
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-green-600" />
+          <p className="text-gray-600">Loading appointment booker...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         
+        {/* Offline Banner */}
+        {isOffline && (
+          <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+            <div className="flex items-center">
+              <WifiOff className="w-5 h-5 text-yellow-600 mr-3" />
+              <div>
+                <p className="text-sm font-medium text-yellow-800">
+                  You're currently offline
+                </p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Viewing cached data. Some features may be limited.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-6">
           <Button 
@@ -455,9 +625,8 @@ export default function BookAppointment() {
                       <div className="absolute inset-0 pointer-events-none">
                         {filteredVets.map((vet) => {
                           // Convert lat/lng to approximate pixel positions
-                          // Map bounds: lng 29.8 to 30.8 (left to right), lat -2.0 to -1.0 (top to bottom)
-                          const mapWidth = 100; // percentage
-                          const mapHeight = 100; // percentage
+                          const mapWidth = 100;
+                          const mapHeight = 100;
                           const lonMin = 29.8;
                           const lonMax = 30.8;
                           const latMin = -2.0;
@@ -470,22 +639,15 @@ export default function BookAppointment() {
                             <div
                               key={vet.id}
                               className="absolute pointer-events-auto cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-transform hover:scale-125 group"
-                              style={{
-                                left: `${x}%`,
-                                top: `${y}%`,
-                              }}
+                              style={{ left: `${x}%`, top: `${y}%` }}
                               onClick={() => handleSelectVet(vet)}
                             >
-                              {/* Red dot */}
-                              <div className={`relative ${
-                                selectedVet?.id === vet.id ? 'animate-pulse' : ''
-                              }`}>
+                              <div className={`relative ${selectedVet?.id === vet.id ? 'animate-pulse' : ''}`}>
                                 <div className={`w-4 h-4 rounded-full shadow-lg ${
                                   selectedVet?.id === vet.id
                                     ? 'bg-green-500 ring-4 ring-green-200'
                                     : 'bg-red-600 ring-2 ring-white'
                                 }`} />
-                                {/* Tooltip on hover */}
                                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block whitespace-nowrap z-10">
                                   <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg">
                                     {vet.name}
@@ -646,15 +808,19 @@ export default function BookAppointment() {
                     <Label htmlFor="livestockId">
                       Select Livestock <span className="text-red-600">*</span>
                     </Label>
-                    {livestock.length === 0 ? (
+                    {loading ? (
+                      <div className="mt-2 p-4 border rounded-md bg-gray-50 text-sm">
+                        <p className="text-gray-600">Loading livestock database...</p>
+                      </div>
+                    ) : livestock.length === 0 ? (
                       <div className="mt-2 p-4 border rounded-md bg-yellow-50 text-sm">
-                        <p className="text-yellow-800 mb-2">You don't have any livestock yet.</p>
+                        <p className="text-yellow-800 mb-2">No livestock found in the database.</p>
                         <Button 
                           size="sm" 
                           variant="outline"
                           onClick={() => router.push('/dashboard/farmer/livestock')}
                         >
-                          Add Livestock First
+                          Add Livestock
                         </Button>
                       </div>
                     ) : (
@@ -664,10 +830,11 @@ export default function BookAppointment() {
                         className="w-full px-3 py-2 border rounded-md mt-1"
                         value={formData.livestockId}
                         onChange={handleInputChange}
+                        required
                       >
-                        <option value="">Choose livestock...</option>
+                        <option value="">Choose livestock from database...</option>
                         {livestock.map((animal) => (
-                          <option key={animal.id} value={animal.id}>
+                          <option key={animal._id || animal.id} value={animal._id || animal.id}>
                             {animal.name} ({animal.type})
                           </option>
                         ))}
@@ -689,6 +856,7 @@ export default function BookAppointment() {
                         value={formData.date}
                         onChange={handleInputChange}
                         className="mt-1"
+                        required
                       />
                     </div>
                     <div>
@@ -701,6 +869,7 @@ export default function BookAppointment() {
                         className="w-full px-3 py-2 border rounded-md mt-1"
                         value={formData.time}
                         onChange={handleInputChange}
+                        required
                       >
                         <option value="">Choose time...</option>
                         {availableTimes.map(time => (
@@ -721,6 +890,7 @@ export default function BookAppointment() {
                       className="w-full px-3 py-2 border rounded-md mt-1"
                       value={formData.reason}
                       onChange={handleInputChange}
+                      required
                     >
                       <option value="">Select reason...</option>
                       <option value="Routine Checkup">Routine Checkup</option>
@@ -752,10 +922,10 @@ export default function BookAppointment() {
                     <Button 
                       onClick={handleSubmit}
                       className="flex-1 bg-green-600 hover:bg-green-700"
-                      disabled={livestock.length === 0}
+                      disabled={loading || livestock.length === 0 || isOffline}
                     >
                       <Calendar className="w-4 h-4 mr-2" />
-                      Confirm Booking
+                      {loading ? "Loading..." : "Confirm Booking"}
                     </Button>
                     <Button 
                       variant="outline"
@@ -840,7 +1010,7 @@ export default function BookAppointment() {
                         <div>
                           <p className="text-sm text-gray-600">Livestock</p>
                           <p className="font-medium">
-                            {livestock.find(l => l.id === parseInt(formData.livestockId))?.name}
+                            {livestock.find(l => (l._id === formData.livestockId || l.id === formData.livestockId))?.name}
                           </p>
                         </div>
                       </div>
