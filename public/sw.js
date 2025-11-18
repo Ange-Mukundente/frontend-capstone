@@ -1,1 +1,109 @@
-if(!self.define){let e,a={};const s=(s,n)=>(s=new URL(s+".js",n).href,a[s]||new Promise(a=>{if("document"in self){const e=document.createElement("script");e.src=s,e.onload=a,document.head.appendChild(e)}else e=s,importScripts(s),a()}).then(()=>{let e=a[s];if(!e)throw new Error(`Module ${s} didn’t register its module`);return e}));self.define=(n,r)=>{const i=e||("document"in self?document.currentScript.src:"")||location.href;if(a[i])return;let t={};const d=e=>s(e,i),c={module:{uri:i},exports:t,require:d};a[i]=Promise.all(n.map(e=>c[e]||d(e))).then(e=>(r(...e),t))}}define(["./workbox-201ef80c"],function(e){"use strict";importScripts("fallback-dpFJM_kofNhfMd8KvDqPI.js"),self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"/_next/static/chunks/117-b153ee776fe2c4d9.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/203-ef82965a0bfe1c60.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/418-13d0a60a463f7993.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/51-9d97da34ac8533a6.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/553-594d6f911ffa3fc6.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/783-149e42328b6d44da.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/878-55e18b19c7c7919c.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/940-4525ab6c32c1fcd5.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/972-9a320670f531dcee.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/_not-found/page-ee14ed0d49d5b571.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/about/page-606bf9c11a1dc74a.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/auth/forgot-password/page-97b63b6f7e0f5e3c.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/auth/login/page-546ba97faa7c849b.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/auth/register/page-438b71c8a67e21b1.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/contact/page-d8a817259df016ac.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/admin/alerts-history/page-1921e1f5701648f0.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/admin/farmers/page-b1aa46e301b47939.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/admin/page-48559d46d9c42fd6.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/admin/reports/page-eadb99be17f2ed31.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/admin/send-alerts/page-505e2f91207f8216.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/admin/veterinarians/page-d8faa71d7c9a5aa9.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/farmer/alerts/page-4abc430c6b4c29d2.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/farmer/appointments/book/page-db9a9db2079490d1.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/farmer/appointments/page-61f9b2e33509533c.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/farmer/contact-vet/page-bca8c8925d7442be.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/farmer/health-records/page-a9cf917d07798ff6.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/farmer/help/page-a9065895cbc1bdd7.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/farmer/livestock/page-de1dddb13ab19209.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/farmer/page-d83eb4694d4f10a7.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/farmer/reports/page-af9106d5ecdc429e.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/veterinarian/appointments/page-ead1c5328a779848.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/veterinarian/appointments/report/page-466d13e6a333de32.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/veterinarian/help/page-4a8a4e51123cee67.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/veterinarian/messages/page-27d5a0790c76544e.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/veterinarian/page-1e1498e6c109d487.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/veterinarian/patients/page-baf1d9c0d9de177d.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/dashboard/veterinarian/schedule/page-03fcdfaf72e541f3.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/layout-fd2e7712bba508a3.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/offline/page-4c12eb719426afd2.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/app/page-92652a325545dae1.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/fd9d1056-b88f8a4cc02eef8b.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/framework-f66176bb897dc684.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/main-3b451121840cbf92.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/main-app-47a129d13d11c4d0.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/pages/_app-72b849fbd24ac258.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/pages/_error-7ba65e1336b92748.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/chunks/polyfills-42372ed130431b0a.js",revision:"846118c33b2c0e922d7b3a7676f81f6f"},{url:"/_next/static/chunks/webpack-3544375f4e07347a.js",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/_next/static/css/f706adcb3a6b264c.css",revision:"f706adcb3a6b264c"},{url:"/_next/static/media/19cfc7226ec3afaa-s.woff2",revision:"9dda5cfc9a46f256d0e131bb535e46f8"},{url:"/_next/static/media/21350d82a1f187e9-s.woff2",revision:"4e2553027f1d60eff32898367dd4d541"},{url:"/_next/static/media/8e9860b6e62d6359-s.woff2",revision:"01ba6c2a184b8cba08b0d57167664d75"},{url:"/_next/static/media/ba9851c3c22cd980-s.woff2",revision:"9e494903d6b0ffec1a1e14d34427d44d"},{url:"/_next/static/media/c5fe6dc8356a8c31-s.woff2",revision:"027a89e9ab733a145db70f09b8a18b42"},{url:"/_next/static/media/df0a9ae256c0569c-s.woff2",revision:"d54db44de5ccb18886ece2fda72bdfe0"},{url:"/_next/static/media/e4af272ccee01ff0-s.p.woff2",revision:"65850a373e258f1c897a2b3d75eb74de"},{url:"/_next/static/media/layers-2x.9859cd12.png",revision:"9859cd12"},{url:"/_next/static/media/layers.ef6db872.png",revision:"ef6db872"},{url:"/_next/static/media/marker-icon.d577052a.png",revision:"d577052a"},{url:"/african-farmer-with-cattle-in-rwanda-countryside.jpg",revision:"c5880543e4dd128121602386ae45b783"},{url:"/favicon.ico",revision:"c30c7d42707a47a3f4591831641e50dc"},{url:"/file.svg",revision:"d09f95206c3fa0bb9bd9fefabfd0ea71"},{url:"/globe.svg",revision:"2aaafa6a49b6563925fe440891e32717"},{url:"/icon-192x192.png",revision:"9313f7e6326b574b4ae89231d5f48260"},{url:"/icon-512x512.png",revision:"fbab8b67d1af0167b569a38e7138c226"},{url:"/manifest.json",revision:"ce398599a988b378d9553baef7de393e"},{url:"/next.svg",revision:"8e061864f388b47f33a1c3780831193e"},{url:"/offline",revision:"dpFJM_kofNhfMd8KvDqPI"},{url:"/rwandan-veterinarian-examining-cattle-in-rural-set.jpg",revision:"6d62e79660b9884c49697cfb797c880b"},{url:"/service-worker.js",revision:"551394b153ef533b87e3be5b933648e3"},{url:"/vercel.svg",revision:"c0af2f507b369b085b35ef4bbe3bcf1e"},{url:"/window.svg",revision:"a2760511c65806022ad20adf74370ff3"}],{ignoreURLParametersMatching:[]}),e.cleanupOutdatedCaches(),e.registerRoute("/",new e.NetworkFirst({cacheName:"start-url",plugins:[{cacheWillUpdate:async({request:e,response:a,event:s,state:n})=>a&&"opaqueredirect"===a.type?new Response(a.body,{status:200,statusText:"OK",headers:a.headers}):a},{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET"),e.registerRoute(({request:e,url:a})=>"navigate"===e.mode||a.pathname.startsWith("/dashboard/farmer"),new e.NetworkFirst({cacheName:"pages-cache",networkTimeoutSeconds:5,plugins:[new e.ExpirationPlugin({maxEntries:50,maxAgeSeconds:86400}),{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET"),e.registerRoute(({url:e})=>e.pathname.includes("/_next/data/")||e.search.includes("_rsc=")||e.pathname.match(/\.rsc$/),new e.NetworkFirst({cacheName:"rsc-data-cache",networkTimeoutSeconds:5,plugins:[new e.ExpirationPlugin({maxEntries:100,maxAgeSeconds:86400}),new e.CacheableResponsePlugin({statuses:[0,200]}),{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET"),e.registerRoute(({url:e})=>"http://localhost:5000"===e.origin||"vetconnect-backend-3.onrender.com"===e.hostname,new e.NetworkFirst({cacheName:"api-cache",networkTimeoutSeconds:5,plugins:[new e.ExpirationPlugin({maxEntries:100,maxAgeSeconds:86400}),new e.CacheableResponsePlugin({statuses:[0,200]}),{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET"),e.registerRoute(({url:e})=>e.pathname.startsWith("/_next/static/"),new e.CacheFirst({cacheName:"next-static-cache",plugins:[new e.ExpirationPlugin({maxEntries:200,maxAgeSeconds:2592e3}),{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET"),e.registerRoute(({url:e})=>e.pathname.includes("webpack"),new e.NetworkOnly({cacheName:"webpack-cache",plugins:[{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET"),e.registerRoute(({request:e})=>"image"===e.destination,new e.CacheFirst({cacheName:"images-cache",plugins:[new e.ExpirationPlugin({maxEntries:200,maxAgeSeconds:2592e3}),{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET"),e.registerRoute(({request:e})=>"font"===e.destination,new e.CacheFirst({cacheName:"fonts-cache",plugins:[new e.ExpirationPlugin({maxEntries:50,maxAgeSeconds:31536e3}),{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET"),e.registerRoute(({url:e})=>"https://fonts.googleapis.com"===e.origin||"https://fonts.gstatic.com"===e.origin,new e.CacheFirst({cacheName:"google-fonts-cache",plugins:[new e.ExpirationPlugin({maxEntries:30,maxAgeSeconds:31536e3}),{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET"),e.registerRoute(({url:e})=>"/manifest.json"===e.pathname,new e.StaleWhileRevalidate({cacheName:"manifest-cache",plugins:[{handlerDidError:async({request:e})=>self.fallback(e)}]}),"GET")});
+/**
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// If the loader is already loaded, just stop.
+if (!self.define) {
+  let registry = {};
+
+  // Used for `eval` and `importScripts` where we can't get script URL by other means.
+  // In both cases, it's safe to use a global var because those functions are synchronous.
+  let nextDefineUri;
+
+  const singleRequire = (uri, parentUri) => {
+    uri = new URL(uri + ".js", parentUri).href;
+    return registry[uri] || (
+      
+        new Promise(resolve => {
+          if ("document" in self) {
+            const script = document.createElement("script");
+            script.src = uri;
+            script.onload = resolve;
+            document.head.appendChild(script);
+          } else {
+            nextDefineUri = uri;
+            importScripts(uri);
+            resolve();
+          }
+        })
+      
+      .then(() => {
+        let promise = registry[uri];
+        if (!promise) {
+          throw new Error(`Module ${uri} didn’t register its module`);
+        }
+        return promise;
+      })
+    );
+  };
+
+  self.define = (depsNames, factory) => {
+    const uri = nextDefineUri || ("document" in self ? document.currentScript.src : "") || location.href;
+    if (registry[uri]) {
+      // Module is already loading or loaded.
+      return;
+    }
+    let exports = {};
+    const require = depUri => singleRequire(depUri, uri);
+    const specialDeps = {
+      module: { uri },
+      exports,
+      require
+    };
+    registry[uri] = Promise.all(depsNames.map(
+      depName => specialDeps[depName] || require(depName)
+    )).then(deps => {
+      factory(...deps);
+      return exports;
+    });
+  };
+}
+define(['./workbox-e639beba'], (function (workbox) { 'use strict';
+
+  importScripts("fallback-development.js");
+  self.skipWaiting();
+  workbox.clientsClaim();
+  workbox.registerRoute("/", new workbox.NetworkFirst({
+    "cacheName": "start-url",
+    plugins: [{
+      cacheWillUpdate: async ({
+        request,
+        response,
+        event,
+        state
+      }) => {
+        if (response && response.type === 'opaqueredirect') {
+          return new Response(response.body, {
+            status: 200,
+            statusText: 'OK',
+            headers: response.headers
+          });
+        }
+        return response;
+      }
+    }, {
+      handlerDidError: async ({
+        request
+      }) => self.fallback(request)
+    }]
+  }), 'GET');
+  workbox.registerRoute(/.*/i, new workbox.NetworkOnly({
+    "cacheName": "dev",
+    plugins: [{
+      handlerDidError: async ({
+        request
+      }) => self.fallback(request)
+    }]
+  }), 'GET');
+
+}));
+//# sourceMappingURL=sw.js.map
