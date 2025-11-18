@@ -55,7 +55,7 @@ export default function ManageFarmers() {
         return
       }
 
-      console.log('🔍 Fetching farmers from:', `${process.env.NEXT_PUBLIC_API_URL}/api/admin/farmers`)
+      console.log(' Fetching farmers from:', `${process.env.NEXT_PUBLIC_API_URL}/api/admin/farmers`)
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/farmers`, {
         headers: {
@@ -64,23 +64,23 @@ export default function ManageFarmers() {
         }
       })
 
-      console.log('📡 Response status:', response.status)
+      console.log(' Response status:', response.status)
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.error('❌ Error response:', errorData)
+        console.error(' Error response:', errorData)
         throw new Error(errorData.message || 'Failed to fetch farmers')
       }
 
       const data = await response.json()
-      console.log('✅ Farmers data received:', data)
-      console.log('📊 Total farmers:', data.count)
+      console.log(' Farmers data received:', data)
+      console.log(' Total farmers:', data.count)
       
       if (data.success) {
         setFarmers(data.data)
       }
     } catch (error: any) {
-      console.error('❌ Fetch farmers error:', error)
+      console.error(' Fetch farmers error:', error)
       toast({
         title: "Error",
         description: error.message || "Failed to fetch farmers",

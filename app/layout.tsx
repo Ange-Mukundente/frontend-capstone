@@ -49,16 +49,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Disable default alerts */}
         <script dangerouslySetInnerHTML={{
           __html: `
             window.alert = function() {};
             window.confirm = function() { return true; };
           `
         }} />
+        
+        {/* Enhanced Service Worker Registration with Offline Support */}
         <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
+                // Register service worker (next-pwa generates this as sw.js)
                 navigator.serviceWorker.register('/sw.js', { 
                   scope: '/',
                   updateViaCache: 'none'
@@ -66,6 +70,7 @@ export default function RootLayout({
                   .then(function(registration) {
                     console.log('✅ ServiceWorker registered:', registration.scope);
                     
+                    // Listen for updates
                     registration.addEventListener('updatefound', function() {
                       console.log('🔄 ServiceWorker update found');
                       const newWorker = registration.installing;
@@ -73,7 +78,14 @@ export default function RootLayout({
                       if (newWorker) {
                         newWorker.addEventListener('statechange', function() {
                           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('🎉 New ServiceWorker available');
+                            console.log('🎉 New ServiceWorker available - reload to activate');
+                            
+                            // Auto-reload after 3 seconds if offline features updated
+                            setTimeout(function() {
+                              console.log('🔄 Auto-reloading to activate new service worker');
+                              newWorker.postMessage({ type: 'SKIP_WAITING' });
+                              window.location.reload();
+                            }, 3000);
                           }
                           if (newWorker.state === 'activated') {
                             console.log('✅ ServiceWorker activated');
@@ -82,29 +94,58 @@ export default function RootLayout({
                       }
                     });
 
+                    // Check for updates every minute
                     setInterval(function() {
                       registration.update();
                     }, 60000);
+
+                    // Cache important farmer pages on first load
+                    if (registration.active) {
+                      const pagesToCache = [
+                        '/dashboard/farmer',
+                        '/dashboard/farmer/livestock',
+                        '/dashboard/farmer/appointments',
+                        '/dashboard/farmer/health-records',
+                        '/dashboard/farmer/reports',
+                        '/dashboard/farmer/alerts',
+                        '/dashboard/farmer/contact-vet',
+                        '/dashboard/farmer/help'
+                      ];
+
+                      registration.active.postMessage({
+                        type: 'CACHE_PAGES',
+                        pages: pagesToCache
+                      });
+                    }
                   })
                   .catch(function(error) {
                     console.error('❌ ServiceWorker registration failed:', error);
                   });
 
+                // Enhanced online/offline detection
                 let wasOffline = !navigator.onLine;
                 
                 window.addEventListener('online', function() {
                   console.log('🌐 Back online!');
                   if (wasOffline) {
+                    // Dispatch custom event for components to listen to
                     const event = new CustomEvent('connection-status-changed', { 
                       detail: { online: true } 
                     });
                     window.dispatchEvent(event);
+                    
+                    // Try to sync pending data
+                    if ('sync' in registration) {
+                      registration.sync.register('sync-data').catch(function(err) {
+                        console.log('Sync registration failed:', err);
+                      });
+                    }
                   }
                   wasOffline = false;
                 });
                 
                 window.addEventListener('offline', function() {
-                  console.log('📡 Gone offline');
+                  console.log('📡 Gone offline - switching to cached mode');
                   wasOffline = true;
                   const event = new CustomEvent('connection-status-changed', { 
                     detail: { online: false } 
@@ -112,10 +153,15 @@ export default function RootLayout({
                   window.dispatchEvent(event);
                 });
 
+                // Initial status log
                 if (!navigator.onLine) {
                   console.log('📡 Starting in offline mode');
+                } else {
+                  console.log('🌐 Starting online');
                 }
               });
+            } else {
+              console.warn('⚠️ Service Workers not supported in this browser');
             }
           `
         }} />

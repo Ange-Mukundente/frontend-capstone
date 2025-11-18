@@ -93,7 +93,7 @@ export default function AdminSendAlerts() {
 
         setFarmers(dbFarmers)
         setFilteredFarmers(dbFarmers)
-        console.log(`✅ Loaded ${dbFarmers.length} farmers`)
+        console.log(` Loaded ${dbFarmers.length} farmers`)
       }
     } catch (error) {
       console.error("Error:", error)
@@ -192,7 +192,7 @@ export default function AdminSendAlerts() {
       const result = await response.json()
 
       if (result.success) {
-        alert(`✅ Success!\n\nSent to: ${result.data.successCount}/${result.data.totalFarmers} farmers`)
+        alert(` Success!\n\nSent to: ${result.data.successCount}/${result.data.totalFarmers} farmers`)
 
         setAlertData({
           title: "",
@@ -205,10 +205,10 @@ export default function AdminSendAlerts() {
           selectedSector: "",
         })
       } else {
-        alert(`❌ Error: ${result.message}`)
+        alert(` Error: ${result.message}`)
       }
     } catch (error: any) {
-      alert(`❌ Error: ${error.message}`)
+      alert(` Error: ${error.message}`)
     } finally {
       setSending(false)
     }
@@ -309,10 +309,10 @@ export default function AdminSendAlerts() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">🌍 All Farmers ({farmers.length})</SelectItem>
-                      <SelectItem value="district">📍 By District</SelectItem>
-                      <SelectItem value="sector">🗺️ By Sector</SelectItem>
-                      <SelectItem value="individual">👤 Individual</SelectItem>
+                      <SelectItem value="all"> All Farmers ({farmers.length})</SelectItem>
+                      <SelectItem value="district"> By District</SelectItem>
+                      <SelectItem value="sector"> By Sector</SelectItem>
+                      <SelectItem value="individual"> Individual</SelectItem>
                     </SelectContent>
                   </Select>
 

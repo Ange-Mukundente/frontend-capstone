@@ -1,12 +1,16 @@
 {
-  "name": "Livestock Health Management System",
+  "name": "VetConnect Rwanda - Smart Veterinary Services",
   "short_name": "VetConnect",
-  "description": "Manage livestock health and connect with veterinarians",
-  "start_url": "/",
+  "description": "Connect with certified veterinarians, manage livestock health records, and receive predictive health alerts. Accessible via web and SMS for farmers across Rwanda.",
+  "start_url": "/dashboard/farmer",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4F46E5",
+  "theme_color": "#16a34a",
   "orientation": "portrait-primary",
+  "categories": ["agriculture", "health", "productivity", "business"],
+  "lang": "en",
+  
   "icons": [
     {
       "src": "/icon-192x192.png",
@@ -19,6 +23,71 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
     }
-  ]
+  ],
+
+  "shortcuts": [
+    {
+      "name": "My Livestock",
+      "short_name": "Livestock",
+      "description": "View and manage your livestock",
+      "url": "/dashboard/farmer/livestock",
+      "icons": [
+        { 
+          "src": "/icon-192x192.png", 
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Book Appointment",
+      "short_name": "Appointments",
+      "description": "Schedule veterinary visits",
+      "url": "/dashboard/farmer/appointments",
+      "icons": [
+        { 
+          "src": "/icon-192x192.png", 
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Health Records",
+      "short_name": "Health",
+      "description": "Check livestock health records",
+      "url": "/dashboard/farmer/health-records",
+      "icons": [
+        { 
+          "src": "/icon-192x192.png", 
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Alerts",
+      "short_name": "Alerts",
+      "description": "View health alerts",
+      "url": "/dashboard/farmer/alerts",
+      "icons": [
+        { 
+          "src": "/icon-192x192.png", 
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+
+  "related_applications": [],
+  "prefer_related_applications": false,
+  
+  "offline_enabled": true
 }
